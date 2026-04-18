@@ -7,7 +7,7 @@ Read it fully before writing or modifying any code.
 
 ## Repository Overview
 
-`tsrpc` is a transport-agnostic JSON-RPC 1.0 + 2.0 TypeScript library. Its design is documented in
+`jsontpc` is a transport-agnostic JSON-RPC 1.0 + 2.0 TypeScript library. Its design is documented in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Understand that document before touching any source file.
 
 ---
@@ -15,7 +15,7 @@ Read it fully before writing or modifying any code.
 ## Repo Layout
 
 ```
-tsrpc/
+jsontpc/
   src/
     core/              ← Zero-dependency protocol core
       types.ts         ← Wire types only (no logic)
@@ -79,7 +79,7 @@ Work through phases **in order**. Do not start a later phase until the current o
 `pnpm typecheck` and `pnpm test`.
 
 ### Phase 1 — Project Scaffold
-- [ ] `package.json` — name `tsrpc`, `"type": "module"`, exports map, peerDependencies
+- [ ] `package.json` — name `jsontpc`, `"type": "module"`, exports map, peerDependencies
 - [ ] `tsconfig.json` — `strict: true`, `target: ES2022`, `module: NodeNext`, `moduleResolution: NodeNext`
 - [ ] `tsup.config.ts` — dual ESM + CJS, all entry points, `dts: true`
 - [ ] `vitest.config.ts`
@@ -168,7 +168,7 @@ Do **not** implement the following (post-v1 backlog):
 - gRPC, AMQP, MQTT, or other non-TCP/HTTP/WS transports
 - JSON-RPC over Server-Sent Events (SSE)
 - Observability / tracing hooks (OpenTelemetry)
-- A CLI tool (`tsrpc generate`, etc.)
+- A CLI tool (`jsontpc generate`, etc.)
 
 If the user requests any of the above, note that it is out of scope and confirm before proceeding.
 

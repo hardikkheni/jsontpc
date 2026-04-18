@@ -1,4 +1,4 @@
-# tsrpc
+# jsontpc
 
 A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js written in TypeScript.
 
@@ -32,13 +32,13 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
 
 ```bash
 # npm
-npm install tsrpc
+npm install jsontpc
 
 # pnpm
-pnpm add tsrpc
+pnpm add jsontpc
 
 # yarn
-yarn add tsrpc
+yarn add jsontpc
 ```
 
 Peer dependencies (install only what you use):
@@ -72,8 +72,8 @@ pnpm add @nestjs/core @nestjs/common reflect-metadata
 
 ```ts
 import * as http from 'node:http';
-import { createRouter, procedure, JsonRpcServer } from 'tsrpc';
-import { HttpServerTransport } from 'tsrpc/http';
+import { createRouter, procedure, JsonRpcServer } from 'jsontpc';
+import { HttpServerTransport } from 'jsontpc/http';
 import { z } from 'zod';
 
 const router = createRouter({
@@ -99,8 +99,8 @@ console.log('JSON-RPC server listening on http://localhost:3000/rpc');
 **Client**
 
 ```ts
-import { createClient } from 'tsrpc';
-import { HttpClientTransport } from 'tsrpc/http';
+import { createClient } from 'jsontpc';
+import { HttpClientTransport } from 'jsontpc/http';
 import type { router } from './server';
 
 const client = createClient<typeof router>(
@@ -119,8 +119,8 @@ const msg = await client.greet({ name: 'World' });  // → "Hello, World!"
 
 ```ts
 import * as net from 'node:net';
-import { createRouter, procedure, JsonRpcServer } from 'tsrpc';
-import { TcpServerTransport } from 'tsrpc/tcp';
+import { createRouter, procedure, JsonRpcServer } from 'jsontpc';
+import { TcpServerTransport } from 'jsontpc/tcp';
 import { z } from 'zod';
 
 const router = createRouter({ /* ... */ });
@@ -133,8 +133,8 @@ transport.listen(4000);
 **Client**
 
 ```ts
-import { createClient } from 'tsrpc';
-import { TcpClientTransport } from 'tsrpc/tcp';
+import { createClient } from 'jsontpc';
+import { TcpClientTransport } from 'jsontpc/tcp';
 import type { router } from './server';
 
 const transport = new TcpClientTransport({ host: 'localhost', port: 4000 });
@@ -152,8 +152,8 @@ const result = await client.add({ a: 10, b: 5 }); // → 15
 
 ```ts
 import { WebSocketServer } from 'ws';
-import { createRouter, procedure, JsonRpcServer } from 'tsrpc';
-import { WsServerTransport } from 'tsrpc/ws';
+import { createRouter, procedure, JsonRpcServer } from 'jsontpc';
+import { WsServerTransport } from 'jsontpc/ws';
 import { z } from 'zod';
 
 const router = createRouter({ /* ... */ });
@@ -166,8 +166,8 @@ transport.attach(server);
 **Client**
 
 ```ts
-import { createClient } from 'tsrpc';
-import { WsClientTransport } from 'tsrpc/ws';
+import { createClient } from 'jsontpc';
+import { WsClientTransport } from 'jsontpc/ws';
 import type { router } from './server';
 
 const transport = new WsClientTransport('ws://localhost:5000');
@@ -182,8 +182,8 @@ const client = createClient<typeof router>(transport);
 
 ```ts
 import express from 'express';
-import { createRouter, procedure, JsonRpcServer } from 'tsrpc';
-import { jsonRpcExpress } from 'tsrpc/express';
+import { createRouter, procedure, JsonRpcServer } from 'jsontpc';
+import { jsonRpcExpress } from 'jsontpc/express';
 import { z } from 'zod';
 
 const router = createRouter({ /* ... */ });
@@ -201,8 +201,8 @@ app.listen(3000);
 
 ```ts
 import Fastify from 'fastify';
-import { createRouter, procedure, JsonRpcServer } from 'tsrpc';
-import { jsonRpcFastify } from 'tsrpc/fastify';
+import { createRouter, procedure, JsonRpcServer } from 'jsontpc';
+import { jsonRpcFastify } from 'jsontpc/fastify';
 import { z } from 'zod';
 
 const router = createRouter({ /* ... */ });
@@ -220,7 +220,7 @@ await app.listen({ port: 3000 });
 ```ts
 // app.module.ts
 import { Module } from '@nestjs/common';
-import { JsonRpcModule } from 'tsrpc/nestjs';
+import { JsonRpcModule } from 'jsontpc/nestjs';
 
 @Module({
   imports: [JsonRpcModule.forRoot({ path: '/rpc' })],
@@ -229,7 +229,7 @@ export class AppModule {}
 
 // math.service.ts
 import { Injectable } from '@nestjs/common';
-import { JsonRpcHandler } from 'tsrpc/nestjs';
+import { JsonRpcHandler } from 'jsontpc/nestjs';
 import { z } from 'zod';
 
 @Injectable()
@@ -305,9 +305,9 @@ All transports implement a common `IClientTransport` or `IServerTransport` inter
 
 | Export path | Server class | Client class |
 |---|---|---|
-| `tsrpc/http` | `HttpServerTransport` | `HttpClientTransport` |
-| `tsrpc/tcp` | `TcpServerTransport` | `TcpClientTransport` |
-| `tsrpc/ws` | `WsServerTransport` | `WsClientTransport` |
+| `jsontpc/http` | `HttpServerTransport` | `HttpClientTransport` |
+| `jsontpc/tcp` | `TcpServerTransport` | `TcpClientTransport` |
+| `jsontpc/ws` | `WsServerTransport` | `WsClientTransport` |
 
 TCP uses **newline-delimited JSON (NDJSON)** framing by default. A custom framer can be passed as an option.
 
@@ -317,9 +317,9 @@ TCP uses **newline-delimited JSON (NDJSON)** framing by default. A custom framer
 
 | Export path | Export | Usage |
 |---|---|---|
-| `tsrpc/express` | `jsonRpcExpress(server, opts?)` | Returns an Express `RequestHandler` |
-| `tsrpc/fastify` | `jsonRpcFastify(server, opts?)` | Returns a Fastify plugin |
-| `tsrpc/nestjs` | `JsonRpcModule`, `JsonRpcHandler`, `JsonRpcService` | NestJS dynamic module + decorator |
+| `jsontpc/express` | `jsonRpcExpress(server, opts?)` | Returns an Express `RequestHandler` |
+| `jsontpc/fastify` | `jsonRpcFastify(server, opts?)` | Returns a Fastify plugin |
+| `jsontpc/nestjs` | `JsonRpcModule`, `JsonRpcHandler`, `JsonRpcService` | NestJS dynamic module + decorator |
 
 ---
 
@@ -339,7 +339,7 @@ Standard JSON-RPC error codes:
 Throw a `JsonRpcError` from a handler to return a typed error to the client:
 
 ```ts
-import { JsonRpcError, ErrorCode } from 'tsrpc';
+import { JsonRpcError, ErrorCode } from 'jsontpc';
 
 handler: () => {
   throw new JsonRpcError('Not authorized', -32001, { reason: 'token_expired' });

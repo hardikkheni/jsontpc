@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the internal design of `tsrpc` — how the layers fit together, how types flow, and the reasoning behind key decisions.
+This document describes the internal design of `jsontpc` — how the layers fit together, how types flow, and the reasoning behind key decisions.
 
 ---
 
@@ -403,7 +403,7 @@ Zod validation errors produce `INVALID_PARAMS(-32602)` responses. The Zod `ZodEr
 ## 9. Package Layout & Build
 
 ```
-tsrpc/
+jsontpc/
   src/
     core/
       types.ts
