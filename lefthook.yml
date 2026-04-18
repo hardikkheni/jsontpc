@@ -1,0 +1,6 @@
+pre-commit:
+  commands:
+    biome:
+      glob: "packages/**/*.ts"
+      run: pnpm exec biome check --write --unsafe {staged_files}
+      stage_fixed: true
