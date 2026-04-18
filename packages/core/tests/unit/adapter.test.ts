@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { type IFrameworkAdapter, bindAdapter, createRequestHandler } from "../../src/adapter.js";
-import { ErrorCode } from "../../src/errors.js";
-import { createRouter, procedure } from "../../src/router.js";
-import { JsonRpcServer } from "../../src/server.js";
+import { type IFrameworkAdapter, bindAdapter, createRequestHandler } from "../../src/adapter";
+import { ErrorCode } from "../../src/errors";
+import { createRouter, procedure } from "../../src/router";
+import { JsonRpcServer } from "../../src/server";
 
 // ---------------------------------------------------------------------------
 // Shared test router

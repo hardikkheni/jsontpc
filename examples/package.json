@@ -8,10 +8,14 @@
     "core:zod-validation": "tsx core/zod-validation.ts",
     "core:notifications": "tsx core/notifications.ts",
     "core:batch": "tsx core/batch.ts",
-    "core:custom-adapter": "tsx core/custom-adapter.ts"
+    "core:custom-adapter": "tsx core/custom-adapter.ts",
+    "tcp:server": "tsx tcp/server.ts",
+    "tcp:client": "tsx tcp/client.ts",
+    "tcp:custom-framing": "tsx tcp/custom-framing.ts"
   },
   "dependencies": {
-    "@jsontpc/core": "workspace:*"
+    "@jsontpc/core": "workspace:*",
+    "@jsontpc/tcp": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.0.0",

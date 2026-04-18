@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ErrorCode, JsonRpcError } from "../../src/errors.js";
-import type { Router } from "../../src/router.js";
-import { createRouter, procedure } from "../../src/router.js";
-import { JsonRpcServer } from "../../src/server.js";
+import { ErrorCode, JsonRpcError } from "../../src/errors";
+import type { Router } from "../../src/router";
+import { createRouter, procedure } from "../../src/router";
+import { JsonRpcServer } from "../../src/server";
 import type {
   AnyRequest,
   AnyResponse,
@@ -10,7 +10,7 @@ import type {
   JsonRpcResponse1,
   JsonRpcResponse2Err,
   JsonRpcResponse2Ok,
-} from "../../src/types.js";
+} from "../../src/types";
 
 // ---------------------------------------------------------------------------
 // Test router

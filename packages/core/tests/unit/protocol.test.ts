@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { ErrorCode, JsonRpcError } from "../../src/errors.js";
+import { ErrorCode, JsonRpcError } from "../../src/errors";
 import {
   detectVersion,
   isBatch,
   isNotification,
   parseMessage,
   serializeResponse,
-} from "../../src/protocol.js";
-import type { AnyResponse, JsonRpcResponse2Ok } from "../../src/types.js";
+} from "../../src/protocol";
+import type { AnyResponse, JsonRpcResponse2Ok } from "../../src/types";
 
 // ---------------------------------------------------------------------------
 // parseMessage

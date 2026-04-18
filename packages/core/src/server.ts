@@ -1,6 +1,6 @@
-import { ErrorCode, JsonRpcError } from "./errors.js";
-import { detectVersion, isNotification, serializeResponse } from "./protocol.js";
-import type { Router } from "./router.js";
+import { ErrorCode, JsonRpcError } from "./errors";
+import { detectVersion, isNotification, serializeResponse } from "./protocol";
+import type { Router } from "./router";
 import type {
   AnyBatch,
   AnyRequest,
@@ -10,7 +10,7 @@ import type {
   JsonRpcResponse1,
   JsonRpcResponse2Err,
   JsonRpcResponse2Ok,
-} from "./types.js";
+} from "./types";
 
 // ---------------------------------------------------------------------------
 // Transport interface (implemented by each @jsontpc/* transport package)
