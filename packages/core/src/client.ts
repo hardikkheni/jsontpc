@@ -1,6 +1,6 @@
-import { JsonRpcError } from "./errors.js";
-import type { InferRouterInput, InferRouterOutput, Router } from "./router.js";
-import type { JsonRpcRequest2, JsonRpcResponse2Err, JsonRpcResponse2Ok } from "./types.js";
+import { JsonRpcError } from "./errors";
+import type { InferRouterInput, InferRouterOutput, Router } from "./router";
+import type { JsonRpcRequest2, JsonRpcResponse2Err, JsonRpcResponse2Ok } from "./types";
 
 // ---------------------------------------------------------------------------
 // Transport interface (implemented by each @jsontpc/* transport package)

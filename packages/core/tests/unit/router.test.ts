@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ProcedureDef } from "../../src/router.js";
-import { createRouter, procedure } from "../../src/router.js";
+import type { ProcedureDef } from "../../src/router";
+import { createRouter, procedure } from "../../src/router";
 
 // ---------------------------------------------------------------------------
 // ProcedureBuilder

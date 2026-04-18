@@ -1,5 +1,5 @@
-import { ErrorCode, JsonRpcError } from "./errors.js";
-import type { AnyBatch, AnyRequest, AnyResponse, JsonRpcRequest2 } from "./types.js";
+import { ErrorCode, JsonRpcError } from "./errors";
+import type { AnyBatch, AnyRequest, AnyResponse, JsonRpcRequest2 } from "./types";
 
 // ---------------------------------------------------------------------------
 // Version detection

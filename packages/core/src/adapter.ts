@@ -1,7 +1,7 @@
-import { ErrorCode, JsonRpcError } from "./errors.js";
-import { isBatch, parseMessage, serializeResponse } from "./protocol.js";
-import type { JsonRpcServer } from "./server.js";
-import type { AnyResponse } from "./types.js";
+import { ErrorCode, JsonRpcError } from "./errors";
+import { isBatch, parseMessage, serializeResponse } from "./protocol";
+import type { JsonRpcServer } from "./server";
+import type { AnyResponse } from "./types";
 
 // ---------------------------------------------------------------------------
 // IFrameworkAdapter — OOP interface
