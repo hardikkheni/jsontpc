@@ -12,6 +12,7 @@
     "lint:fix": "biome check --write packages/",
     "changeset": "changeset",
     "release": "changeset publish",
+    "build:publish": "turbo run build && changeset publish",
     "check:publint": "publint packages/core && publint packages/http && publint packages/tcp && publint packages/ws && publint packages/express && publint packages/fastify && publint packages/nestjs",
     "check:attw": "attw --pack packages/core && attw --pack packages/http && attw --pack packages/tcp && attw --pack packages/ws && attw --pack packages/express && attw --pack packages/fastify && attw --pack packages/nestjs",
     "postinstall": "lefthook install"
