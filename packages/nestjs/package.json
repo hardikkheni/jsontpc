@@ -28,5 +28,9 @@
     "@nestjs/common": ">=10",
     "@nestjs/core": ">=10",
     "reflect-metadata": ">=0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   }
 }
