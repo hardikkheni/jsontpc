@@ -1,6 +1,6 @@
 {
   "name": "@jsontpc/http",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "HTTP transport for @jsontpc/core — uses native Node.js http and fetch",
   "type": "module",
   "engines": {
@@ -21,7 +21,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",

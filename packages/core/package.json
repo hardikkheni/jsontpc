@@ -1,6 +1,6 @@
 {
   "name": "@jsontpc/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency JSON-RPC 1.0 + 2.0 protocol core: types, router, server, client",
   "type": "module",
   "engines": {
@@ -21,7 +21,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
