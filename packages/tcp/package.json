@@ -1,9 +1,11 @@
 {
   "name": "@jsontpc/tcp",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "TCP transport for @jsontpc/core — NDJSON framing over Node.js net sockets",
   "type": "module",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "exports": {
     ".": {
       "import": {
@@ -19,7 +21,9 @@
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
