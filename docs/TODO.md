@@ -23,35 +23,45 @@
 - [x] `pnpm lint` exits 0
 
 ### Phase 1 — Manual Steps (one-time)
-- [ ] Create npm account / organisation (if not done)
-- [ ] Generate npm **Automation token** → add as `NPM_TOKEN` secret in GitHub repo settings
-- [ ] Confirm OIDC `id-token: write` is enabled for the repo (already in `release.yml`)
+- [x] Create npm account / organisation (if not done)
+- [x] Generate npm **Automation token** → add as `NPM_TOKEN` secret in GitHub repo settings
+- [x] Confirm OIDC `id-token: write` is enabled for the repo (already in `release.yml`)
 
 ---
 
 ## Implementation Phases
 
 ### Phase 2 — Core Protocol (`packages/core`)
-- [ ] `packages/core/src/types.ts`
-- [ ] `packages/core/src/errors.ts`
-- [ ] `packages/core/src/protocol.ts`
-- [ ] `packages/core/src/router.ts`
-- [ ] `packages/core/src/server.ts`
-- [ ] `packages/core/src/client.ts`
-- [ ] `packages/core/src/index.ts` (replace stub with real barrel)
-- [ ] `packages/core/tests/unit/protocol.test.ts`
-- [ ] `packages/core/tests/unit/server.test.ts`
-- [ ] `packages/core/tests/unit/router.test.ts`
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm test` passes (all unit tests green)
+- [x] `packages/core/src/types.ts`
+- [x] `packages/core/src/errors.ts`
+- [x] `packages/core/src/protocol.ts`
+- [x] `packages/core/src/router.ts`
+- [x] `packages/core/src/server.ts`
+- [x] `packages/core/src/client.ts`
+- [x] `packages/core/src/adapter.ts` — `IFrameworkAdapter`, `createRequestHandler`, `bindAdapter`
+- [x] `packages/core/src/index.ts` (replace stub with real barrel)
+- [x] `packages/core/tests/unit/protocol.test.ts`
+- [x] `packages/core/tests/unit/server.test.ts`
+- [x] `packages/core/tests/unit/router.test.ts`
+- [x] `packages/core/tests/unit/adapter.test.ts`
+- [x] **Examples scaffold** — `examples/package.json`, `examples/tsconfig.json`; add `examples` to `pnpm-workspace.yaml`
+- [x] `examples/core/basic-router.ts`
+- [x] `examples/core/zod-validation.ts`
+- [x] `examples/core/notifications.ts`
+- [x] `examples/core/batch.ts`
+- [x] `examples/core/custom-adapter.ts`
+- [x] `pnpm typecheck` passes
+- [x] `pnpm test` passes (all unit tests green)
 
 ### Phase 3 — Transports (implement one at a time)
 
 #### HTTP (`packages/http`)
-- [ ] `packages/http/src/server.ts` — `HttpServerTransport`
+- [ ] `packages/http/src/server.ts` — `HttpServerTransport` (uses `bindAdapter` internally)
 - [ ] `packages/http/src/client.ts` — `HttpClientTransport`
 - [ ] `packages/http/src/index.ts` (replace stub)
 - [ ] `packages/http/tests/integration/http.test.ts`
+- [ ] `examples/http/server.ts` — start an HTTP server
+- [ ] `examples/http/client.ts` — call the server via `HttpClientTransport`
 
 #### TCP (`packages/tcp`)
 - [ ] `packages/tcp/src/framing.ts` — `IFramer` interface + `NdJsonFramer`
@@ -59,12 +69,17 @@
 - [ ] `packages/tcp/src/client.ts` — `TcpClientTransport`
 - [ ] `packages/tcp/src/index.ts` (replace stub)
 - [ ] `packages/tcp/tests/integration/tcp.test.ts`
+- [ ] `examples/tcp/server.ts`
+- [ ] `examples/tcp/client.ts`
+- [ ] `examples/tcp/custom-framing.ts` — swap `NdJsonFramer` for a custom `IFramer`
 
 #### WebSocket (`packages/ws`)
 - [ ] `packages/ws/src/server.ts` — `WsServerTransport`
 - [ ] `packages/ws/src/client.ts` — `WsClientTransport`
 - [ ] `packages/ws/src/index.ts` (replace stub)
 - [ ] `packages/ws/tests/integration/ws.test.ts`
+- [ ] `examples/ws/server.ts`
+- [ ] `examples/ws/client.ts`
 
 - [ ] `pnpm typecheck` passes
 - [ ] `pnpm test` passes (all integration tests green)
@@ -72,12 +87,14 @@
 ### Phase 4 — Framework Adapters (implement in any order)
 
 #### Express (`packages/express`)
-- [ ] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory
+- [ ] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory (uses `bindAdapter` internally)
 - [ ] `packages/express/tests/integration/express.test.ts`
+- [ ] `examples/express/app.ts`
 
 #### Fastify (`packages/fastify`)
-- [ ] `packages/fastify/src/index.ts` — `jsonRpcFastify()` plugin factory
+- [ ] `packages/fastify/src/index.ts` — `jsonRpcFastify()` plugin factory (uses `bindAdapter` internally)
 - [ ] `packages/fastify/tests/integration/fastify.test.ts`
+- [ ] `examples/fastify/app.ts`
 
 #### NestJS (`packages/nestjs`)
 - [ ] `packages/nestjs/src/decorator.ts` — `@JsonRpcHandler()` method decorator
@@ -85,6 +102,7 @@
 - [ ] `packages/nestjs/src/module.ts` — `JsonRpcModule.forRoot()` dynamic module
 - [ ] `packages/nestjs/src/index.ts` (replace stub)
 - [ ] `packages/nestjs/tests/integration/nestjs.test.ts`
+- [ ] `examples/nestjs/main.ts` + `examples/nestjs/app.module.ts` + `examples/nestjs/math.service.ts`
 
 - [ ] `pnpm typecheck` passes
 - [ ] `pnpm test` passes

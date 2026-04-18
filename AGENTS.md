@@ -23,8 +23,9 @@ jsontpc-workspace/              ← monorepo root (private, not published)
         errors.ts               ← JsonRpcError class + ErrorCode enum
         protocol.ts             ← parse/serialize/detect helpers
         router.ts               ← procedure builder, createRouter, type helpers
-        server.ts               ← JsonRpcServer (dispatch engine)
-        client.ts               ← createClient<TRouter> proxy factory
+        server.ts               ← JsonRpcServer (dispatch engine) + IServerTransport
+        client.ts               ← createClient<TRouter> proxy factory + IClientTransport
+        adapter.ts              ← IFrameworkAdapter, createRequestHandler, bindAdapter
         index.ts                ← Barrel re-export
       tests/unit/               ← Pure unit tests (no network I/O)
     http/                       ← @jsontpc/http
@@ -61,6 +62,19 @@ jsontpc-workspace/              ← monorepo root (private, not published)
         service.ts              ← JsonRpcService injectable
         index.ts
       tests/integration/
+  examples/                     ← Runnable tsx scripts (one sub-folder per package)
+    core/
+      basic-router.ts
+      zod-validation.ts
+      notifications.ts
+      batch.ts
+      custom-adapter.ts
+    http/                       ← added in Phase 3
+    tcp/                        ← added in Phase 3
+    ws/                         ← added in Phase 3
+    express/                    ← added in Phase 4
+    fastify/                    ← added in Phase 4
+    nestjs/                     ← added in Phase 4
   docs/
     ARCHITECTURE.md             ← Detailed design doc
     TODO.md                     ← Implementation checklist
@@ -122,19 +136,22 @@ Work through phases **in order**. Do not start a later phase until the current o
 - [ ] `packages/core/src/router.ts`
 - [ ] `packages/core/src/server.ts`
 - [ ] `packages/core/src/client.ts`
+- [ ] `packages/core/src/adapter.ts` — `IFrameworkAdapter`, `createRequestHandler`, `bindAdapter`
 - [ ] `packages/core/src/index.ts` (replace stub with real barrel)
-- [ ] Unit tests: `packages/core/tests/unit/protocol.test.ts`, `server.test.ts`, `router.test.ts`
+- [ ] Unit tests: `packages/core/tests/unit/protocol.test.ts`, `server.test.ts`, `router.test.ts`, `adapter.test.ts`
+- [ ] Examples scaffold: `examples/package.json`, `examples/tsconfig.json`, add `examples` to `pnpm-workspace.yaml`
+- [ ] `examples/core/basic-router.ts`, `zod-validation.ts`, `notifications.ts`, `batch.ts`, `custom-adapter.ts`
 - [ ] All unit tests pass
 
 ### Phase 3 — Transports (implement in any order, one at a time)
-- [ ] `packages/http/src/` + `packages/http/tests/integration/http.test.ts`
-- [ ] `packages/tcp/src/` + `packages/tcp/tests/integration/tcp.test.ts`
-- [ ] `packages/ws/src/` + `packages/ws/tests/integration/ws.test.ts`
+- [ ] `packages/http/src/` + `packages/http/tests/integration/http.test.ts` + `examples/http/`
+- [ ] `packages/tcp/src/` + `packages/tcp/tests/integration/tcp.test.ts` + `examples/tcp/`
+- [ ] `packages/ws/src/` + `packages/ws/tests/integration/ws.test.ts` + `examples/ws/`
 
 ### Phase 4 — Framework Adapters (implement in any order)
-- [ ] `packages/express/src/index.ts` + `packages/express/tests/integration/express.test.ts`
-- [ ] `packages/fastify/src/index.ts` + `packages/fastify/tests/integration/fastify.test.ts`
-- [ ] `packages/nestjs/src/` + `packages/nestjs/tests/integration/nestjs.test.ts`
+- [ ] `packages/express/src/index.ts` + `packages/express/tests/integration/express.test.ts` + `examples/express/`
+- [ ] `packages/fastify/src/index.ts` + `packages/fastify/tests/integration/fastify.test.ts` + `examples/fastify/`
+- [ ] `packages/nestjs/src/` + `packages/nestjs/tests/integration/nestjs.test.ts` + `examples/nestjs/`
 
 ### Phase 5 — Polish
 - [ ] Verify `package.json` exports map is complete
@@ -180,6 +197,9 @@ Work through phases **in order**. Do not start a later phase until the current o
 ### Naming
 - Transport classes: `{Protocol}ServerTransport`, `{Protocol}ClientTransport`
 - Adapter factories: `jsonRpc{Framework}` (camelCase, lowercase framework name)
+- Generic adapter interface: `IFrameworkAdapter<TReq, TRes>`
+- Function factory helper: `createRequestHandler(server)`
+- Wiring helper: `bindAdapter(server, adapter)`
 - NestJS decorator: `@JsonRpcHandler`
 - Keep exported names stable — this is a library; renaming is a breaking change
 
@@ -190,9 +210,26 @@ Work through phases **in order**. Do not start a later phase until the current o
 - Test both 1.0 and 2.0 request/response shapes in `server.test.ts`
 - Test notifications, batches, missing methods, invalid params, and internal errors
 
+### Adapter Integration Rule
+- **Framework adapter packages MUST use `bindAdapter` or `createRequestHandler` from `@jsontpc/core`** — never reimplement the dispatch loop (parseMessage → handle/handleBatch → serializeResponse) inside an adapter package.
+- `createRequestHandler` is the lowest-level integration point. Use it when you need a plain `(rawBody, context?) => Promise<string | null>` function.
+- `bindAdapter` is for structured packages that implement `IFrameworkAdapter<TReq, TRes>`.
+- Custom adapters for any framework are **in scope** — users can build and publish their own `@yourscope/jsontpc-{framework}` packages using these primitives.
+
 ---
 
-## What Is Out of Scope
+### Examples
+
+Runnable examples live in `examples/` at the monorepo root (not in `packages/`). They are executed with `tsx` and are **not** part of the Turborepo build pipeline.
+
+- **Location**: `examples/{package-name}/{feature}.ts`
+- **Runner**: `tsx` (no compile step needed)
+- **Run from workspace root**: `pnpm --filter jsontpc-examples {package}:{feature}`
+- **Rule**: Each example must be runnable in isolation — it starts any required server, performs its demo, and exits cleanly.
+- **Deps**: The `examples/` package lists all `@jsontpc/*` deps as `workspace:*`. Any framework peer deps (e.g. `express`, `zod`) are devDependencies of `examples`.
+- **Do not** include examples in `turbo.json` pipeline tasks or in `tsup` entry points.
+
+---
 
 Do **not** implement the following (post-v1 backlog):
 
@@ -204,7 +241,9 @@ Do **not** implement the following (post-v1 backlog):
 - Observability / tracing hooks (OpenTelemetry)
 - A CLI tool (`jsontpc generate`, etc.)
 
-If the user requests any of the above, note that it is out of scope and confirm before proceeding.
+**Custom framework adapters are explicitly IN SCOPE.** Any framework not covered by the first-party packages (Express, Fastify, NestJS) can be supported by implementing `IFrameworkAdapter` or calling `createRequestHandler` directly. Users and third parties may publish their own adapter packages using these primitives.
+
+If the user requests gRPC, AMQP, SSE, or items from the backlog above, note that it is out of scope and confirm before proceeding.
 
 ---
 

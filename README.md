@@ -6,7 +6,7 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
 - **Typed procedure router** with [Zod](https://zod.dev) schema validation for params & results
 - **Typed client** — call remote methods with full IntelliSense, no code generation required
 - **Transport-agnostic core** — plug in any transport: HTTP, TCP, WebSocket, or bring your own
-- **Framework adapters** as subpath exports: Express, Fastify, NestJS
+- **Framework adapters** as subpath exports: Express, Fastify, NestJS — or **build your own for any framework**
 - **Batch requests** (JSON-RPC 2.0) — processed concurrently
 - Dual **ESM + CJS** build, zero core runtime dependencies
 
@@ -22,8 +22,10 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
   - [Express](#express)
   - [Fastify](#fastify)
   - [NestJS](#nestjs)
+  - [Custom Adapters](#custom-adapters)
 - [API Reference](#api-reference)
 - [Error Codes](#error-codes)
+- [Examples](#examples)
 - [Contributing](#contributing)
 
 ---
@@ -246,6 +248,63 @@ export class MathService {
 
 ---
 
+### Custom Adapters
+
+`@jsontpc/core` exports two integration paths for building adapters for **any** HTTP framework:
+
+**Path 1 — Function factory** (simplest, no boilerplate)
+
+```ts
+import { createRouter, procedure, JsonRpcServer, createRequestHandler } from '@jsontpc/core';
+
+const router = createRouter({ /* ... */ });
+const server = new JsonRpcServer(router);
+
+// Returns (rawBody: string, context?: unknown) => Promise<string | null>
+// null means it was a notification — send no response (HTTP 204)
+const handle = createRequestHandler(server);
+
+// Works with any framework that exposes the raw body as a string
+// Example: Hono
+app.post('/rpc', async (c) => {
+  const rawBody = await c.req.text();
+  const responseBody = await handle(rawBody, { req: c.req });
+  if (responseBody === null) return c.body(null, 204);
+  return c.json(JSON.parse(responseBody));
+});
+```
+
+**Path 2 — OOP interface** (for publishable adapter packages)
+
+```ts
+import {
+  createRouter, procedure, JsonRpcServer,
+  IFrameworkAdapter, bindAdapter,
+} from '@jsontpc/core';
+
+class HonoAdapter implements IFrameworkAdapter<HonoContext, HonoContext> {
+  extractBody(c: HonoContext) {
+    return c.req.text();    // raw JSON string
+  }
+  writeResponse(c: HonoContext, body: string | null) {
+    if (body === null) return c.body(null, 204);
+    return c.json(JSON.parse(body));
+  }
+}
+
+const router = createRouter({ /* ... */ });
+const server = new JsonRpcServer(router);
+
+// rpcHandler: (req: HonoContext, res: HonoContext, context?) => Promise<void>
+const rpcHandler = bindAdapter(server, new HonoAdapter());
+
+app.post('/rpc', (c) => rpcHandler(c, c));
+```
+
+See [`examples/core/custom-adapter.ts`](examples/core/custom-adapter.ts) for a full working example using `node:http` (zero extra dependencies).
+
+---
+
 ## API Reference
 
 ### Core
@@ -320,6 +379,9 @@ TCP uses **newline-delimited JSON (NDJSON)** framing by default. A custom framer
 | `jsontpc/express` | `jsonRpcExpress(server, opts?)` | Returns an Express `RequestHandler` |
 | `jsontpc/fastify` | `jsonRpcFastify(server, opts?)` | Returns a Fastify plugin |
 | `jsontpc/nestjs` | `JsonRpcModule`, `JsonRpcHandler`, `JsonRpcService` | NestJS dynamic module + decorator |
+| `jsontpc` (core) | `createRequestHandler(server)` | `(rawBody, context?) => Promise<string \| null>` — lowest-level integration point |
+| `jsontpc` (core) | `IFrameworkAdapter<TReq, TRes>` | Interface to implement for structured adapter packages |
+| `jsontpc` (core) | `bindAdapter(server, adapter)` | Wires an `IFrameworkAdapter` to the handler loop |
 
 ---
 
@@ -345,6 +407,23 @@ handler: () => {
   throw new JsonRpcError('Not authorized', -32001, { reason: 'token_expired' });
 }
 ```
+
+---
+
+## Examples
+
+All examples are runnable TypeScript scripts (no compile step). Requires `pnpm install` first.
+
+```bash
+# Core examples
+pnpm --filter jsontpc-examples core:basic          # createRouter + server.handle() with no transport
+pnpm --filter jsontpc-examples core:zod-validation # Zod .input()/.output() — valid + invalid call
+pnpm --filter jsontpc-examples core:notifications  # v1 + v2 fire-and-forget notifications
+pnpm --filter jsontpc-examples core:batch          # handleBatch — concurrent, mixed, all-notification
+pnpm --filter jsontpc-examples core:custom-adapter # IFrameworkAdapter + bindAdapter with node:http
+```
+
+Examples for transport and framework adapter packages will be added alongside each implementation phase. See [`examples/`](examples/) for the full list.
 
 ---
 

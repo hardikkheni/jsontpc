@@ -1,0 +1,21 @@
+{
+  "name": "jsontpc-examples",
+  "private": true,
+  "type": "module",
+  "description": "Runnable jsontpc examples — use tsx to execute any script directly",
+  "scripts": {
+    "core:basic": "tsx core/basic-router.ts",
+    "core:zod-validation": "tsx core/zod-validation.ts",
+    "core:notifications": "tsx core/notifications.ts",
+    "core:batch": "tsx core/batch.ts",
+    "core:custom-adapter": "tsx core/custom-adapter.ts"
+  },
+  "dependencies": {
+    "@jsontpc/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0",
+    "zod": "^3.0.0",
+    "@types/node": "^22.0.0"
+  }
+}
