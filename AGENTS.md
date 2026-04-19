@@ -231,6 +231,18 @@ Runnable examples live in `examples/` at the monorepo root (not in `packages/`).
 
 ---
 
+## Documentation Hygiene
+
+These rules apply whenever code in this repo changes. Follow them on every PR.
+
+- **After implementing any feature:** mark the corresponding items in `docs/TODO.md` as `[x]` and update the package's `README.md` to reflect the actual exported API.
+- **`docs/ARCHITECTURE.md` is design-only.** It describes how the system works. Never add phase markers, TODO annotations, or implementation-status notes to it.
+- **Root `README.md` shows only implemented, published features.** Unimplemented design details belong in `docs/ARCHITECTURE.md`. Pending tasks belong in `docs/TODO.md`. Unimplemented packages have their own stub `README.md` under `packages/*/README.md`.
+- **Each package owns its own `README.md`** (`packages/*/README.md`). Keep it in sync with the package's actual exports. Stub READMEs for unimplemented packages must include a "Status: Not yet implemented" notice and a link to `docs/TODO.md`.
+- **`CLAUDE.md` is a symlink to `AGENTS.md`.** Never edit `CLAUDE.md` directly — edit `AGENTS.md` instead.
+
+---
+
 Do **not** implement the following (post-v1 backlog):
 
 - Browser bundle / UMD build
@@ -271,6 +283,6 @@ Before marking a PR ready:
 - [ ] `pnpm check:publint` passes (no export map errors)
 - [ ] `pnpm check:attw` passes (types resolve for both ESM and CJS consumers)
 - [ ] No `any` types introduced
-- [ ] New public API is documented in `README.md`
+- [ ] New public API is documented in the package's `README.md`; root `README.md` shows only implemented features
 - [ ] If a new transport or adapter was added, its `packages/*/package.json` exports map is
   complete and it appears in the root `turbo.json` pipeline

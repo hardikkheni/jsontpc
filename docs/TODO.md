@@ -64,14 +64,14 @@
 - [ ] `examples/http/client.ts` — call the server via `HttpClientTransport`
 
 #### TCP (`packages/tcp`)
-- [ ] `packages/tcp/src/framing.ts` — `IFramer` interface + `NdJsonFramer`
-- [ ] `packages/tcp/src/server.ts` — `TcpServerTransport`
-- [ ] `packages/tcp/src/client.ts` — `TcpClientTransport`
-- [ ] `packages/tcp/src/index.ts` (replace stub)
-- [ ] `packages/tcp/tests/integration/tcp.test.ts`
-- [ ] `examples/tcp/server.ts`
-- [ ] `examples/tcp/client.ts`
-- [ ] `examples/tcp/custom-framing.ts` — swap `NdJsonFramer` for a custom `IFramer`
+- [x] `packages/tcp/src/framing.ts` — `IFramer` interface + `NdJsonFramer`
+- [x] `packages/tcp/src/server.ts` — `TcpServerTransport`
+- [x] `packages/tcp/src/client.ts` — `TcpClientTransport`
+- [x] `packages/tcp/src/index.ts` (replace stub)
+- [x] `packages/tcp/tests/integration/tcp.test.ts`
+- [x] `examples/tcp/server.ts`
+- [x] `examples/tcp/client.ts`
+- [x] `examples/tcp/custom-framing.ts` — swap `NdJsonFramer` for a custom `IFramer`
 
 #### WebSocket (`packages/ws`)
 - [ ] `packages/ws/src/server.ts` — `WsServerTransport`

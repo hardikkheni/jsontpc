@@ -546,12 +546,12 @@ jsontpc-workspace/              ← monorepo root (private, not published)
       notifications.ts
       batch.ts
       custom-adapter.ts
-    http/                       ← added in Phase 3
-    tcp/                        ← added in Phase 3
-    ws/                         ← added in Phase 3
-    express/                    ← added in Phase 4
-    fastify/                    ← added in Phase 4
-    nestjs/                     ← added in Phase 4
+    http/
+    tcp/
+    ws/
+    express/
+    fastify/
+    nestjs/
   AGENTS.md
   README.md
   package.json                  ← private workspace root
