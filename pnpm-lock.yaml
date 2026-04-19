@@ -47,6 +47,9 @@ importers:
       '@jsontpc/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@jsontpc/http':
+        specifier: workspace:*
+        version: link:../packages/http
       '@jsontpc/tcp':
         specifier: workspace:*
         version: link:../packages/tcp

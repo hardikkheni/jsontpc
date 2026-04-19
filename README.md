@@ -17,6 +17,7 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
 - [Packages](#packages)
 - [Install](#install)
 - [Quick Start](#quick-start)
+  - [HTTP](#http)
   - [TCP](#tcp)
   - [Custom Adapters](#custom-adapters)
 - [Error Codes](#error-codes)
@@ -31,7 +32,7 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
 |---------|--------|-------------|
 | [`@jsontpc/core`](packages/core/README.md) | ✅ Stable | Protocol core — types, router, server, client, adapter primitives |
 | [`@jsontpc/tcp`](packages/tcp/README.md) | ✅ Stable | TCP transport (NDJSON framing, custom framer support) |
-| [`@jsontpc/http`](packages/http/README.md) | 🚧 Planned | HTTP transport (`node:http` + `fetch`) |
+| [`@jsontpc/http`](packages/http/README.md) | ✅ Stable | HTTP transport (`node:http` + `fetch`) |
 | [`@jsontpc/ws`](packages/ws/README.md) | 🚧 Planned | WebSocket transport (`ws`) |
 | [`@jsontpc/express`](packages/express/README.md) | 🚧 Planned | Express middleware adapter |
 | [`@jsontpc/fastify`](packages/fastify/README.md) | 🚧 Planned | Fastify plugin adapter |
@@ -44,12 +45,52 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
 ```bash
 pnpm add @jsontpc/core        # always required
 pnpm add @jsontpc/tcp         # TCP transport
+pnpm add @jsontpc/http        # HTTP transport
 pnpm add zod                  # optional — schema validation
 ```
 
 ---
 
 ## Quick Start
+
+### HTTP
+
+**Server**
+
+```ts
+import { createRouter, procedure, JsonRpcServer } from '@jsontpc/core';
+import { HttpServerTransport } from '@jsontpc/http';
+import { z } from 'zod';
+
+const router = createRouter({
+  add: procedure
+    .input(z.object({ a: z.number(), b: z.number() }))
+    .output(z.number())
+    .handler(({ input }) => input.a + input.b),
+});
+
+const server = new JsonRpcServer(router);
+const transport = new HttpServerTransport({ path: '/rpc' });
+transport.attach(server);
+await transport.listen(3000);
+```
+
+**Client**
+
+```ts
+import { createClient } from '@jsontpc/core';
+import { HttpClientTransport } from '@jsontpc/http';
+import type { router } from './server';
+
+const client = createClient<typeof router>(
+  new HttpClientTransport('http://localhost:3000/rpc')
+);
+const result = await client.add({ a: 10, b: 5 }); // → 15
+```
+
+HTTP transport is stateless — no `connect()`/`close()` required. Notifications return `''` from `send()` (server responds 204).
+
+---
 
 ### TCP
 
@@ -183,6 +224,15 @@ pnpm --filter jsontpc-examples core:zod-validation # Zod .input()/.output() — 
 pnpm --filter jsontpc-examples core:notifications  # v1 + v2 fire-and-forget notifications
 pnpm --filter jsontpc-examples core:batch          # handleBatch — concurrent, mixed, all-notification
 pnpm --filter jsontpc-examples core:custom-adapter # IFrameworkAdapter + bindAdapter with node:http
+
+# HTTP examples (run server in one terminal, client in another)
+pnpm --filter jsontpc-examples http:server         # Start HTTP server on port 3100
+pnpm --filter jsontpc-examples http:client         # Run typed proxy demo against port 3100
+
+# TCP examples (run server in one terminal, client in another)
+pnpm --filter jsontpc-examples tcp:server          # Start TCP server on port 3300
+pnpm --filter jsontpc-examples tcp:client          # Run typed proxy demo against port 3300
+pnpm --filter jsontpc-examples tcp:custom-framing  # Length-prefix framer demo
 ```
 
 See [`examples/`](examples/) for the full list.
