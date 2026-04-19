@@ -55,13 +55,13 @@
 
 ### Phase 3 — Transports (implement one at a time)
 
-#### HTTP (`packages/http`)
-- [ ] `packages/http/src/server.ts` — `HttpServerTransport` (uses `bindAdapter` internally)
-- [ ] `packages/http/src/client.ts` — `HttpClientTransport`
-- [ ] `packages/http/src/index.ts` (replace stub)
-- [ ] `packages/http/tests/integration/http.test.ts`
-- [ ] `examples/http/server.ts` — start an HTTP server
-- [ ] `examples/http/client.ts` — call the server via `HttpClientTransport`
+#### HTTP (`packages/http`) — COMPLETE ✅
+- [x] `packages/http/src/server.ts` — `HttpServerTransport`
+- [x] `packages/http/src/client.ts` — `HttpClientTransport`
+- [x] `packages/http/src/index.ts` (replace stub)
+- [x] `packages/http/tests/integration/http.test.ts`
+- [x] `examples/http/server.ts` — start an HTTP server
+- [x] `examples/http/client.ts` — call the server via `HttpClientTransport`
 
 #### TCP (`packages/tcp`)
 - [x] `packages/tcp/src/framing.ts` — `IFramer` interface + `NdJsonFramer`

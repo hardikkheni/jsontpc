@@ -122,6 +122,8 @@ Always run `pnpm typecheck` and `pnpm test` after any change. Do not submit code
 Work through phases **in order**. Do not start a later phase until the current one fully passes
 `pnpm typecheck` and `pnpm test`.
 
+**Keeping phases current:** When you complete any item, mark it `[x]` immediately. When every item in a phase is `[x]`, append `✅` to the phase heading. Never leave a completed item marked `[ ]`.
+
 ### Phase 1 — Monorepo Scaffold ✅
 - [x] Root `package.json`, `tsconfig.base.json`, `tsconfig.json`, `pnpm-workspace.yaml`, `turbo.json`
 - [x] `biome.json`, `lefthook.yml`, `.npmrc`, `.gitignore`
@@ -129,32 +131,87 @@ Work through phases **in order**. Do not start a later phase until the current o
 - [x] All 7 `packages/*/` scaffolds with `package.json`, `tsconfig.json`, `tsup.config.ts`, `vitest.config.ts`, `src/index.ts`
 - [x] `pnpm install`, `pnpm build`, `pnpm typecheck`, `pnpm test`, `pnpm lint` all exit 0
 
-### Phase 2 — Core Protocol
-- [ ] `packages/core/src/types.ts`
-- [ ] `packages/core/src/errors.ts`
-- [ ] `packages/core/src/protocol.ts`
-- [ ] `packages/core/src/router.ts`
-- [ ] `packages/core/src/server.ts`
-- [ ] `packages/core/src/client.ts`
-- [ ] `packages/core/src/adapter.ts` — `IFrameworkAdapter`, `createRequestHandler`, `bindAdapter`
-- [ ] `packages/core/src/index.ts` (replace stub with real barrel)
-- [ ] Unit tests: `packages/core/tests/unit/protocol.test.ts`, `server.test.ts`, `router.test.ts`, `adapter.test.ts`
-- [ ] Examples scaffold: `examples/package.json`, `examples/tsconfig.json`, add `examples` to `pnpm-workspace.yaml`
-- [ ] `examples/core/basic-router.ts`, `zod-validation.ts`, `notifications.ts`, `batch.ts`, `custom-adapter.ts`
-- [ ] All unit tests pass
+### Phase 2 — Core Protocol ✅
+- [x] `packages/core/src/types.ts`
+- [x] `packages/core/src/errors.ts`
+- [x] `packages/core/src/protocol.ts`
+- [x] `packages/core/src/router.ts`
+- [x] `packages/core/src/server.ts`
+- [x] `packages/core/src/client.ts`
+- [x] `packages/core/src/adapter.ts` — `IFrameworkAdapter`, `createRequestHandler`, `bindAdapter`
+- [x] `packages/core/src/index.ts` (replace stub with real barrel)
+- [x] Unit tests: `packages/core/tests/unit/protocol.test.ts`, `server.test.ts`, `router.test.ts`, `adapter.test.ts`
+- [x] Examples scaffold: `examples/package.json`, `examples/tsconfig.json`, add `examples` to `pnpm-workspace.yaml`
+- [x] `examples/core/basic-router.ts`, `zod-validation.ts`, `notifications.ts`, `batch.ts`, `custom-adapter.ts`
+- [x] All unit tests pass
 
 ### Phase 3 — Transports (implement in any order, one at a time)
-- [ ] `packages/http/src/` + `packages/http/tests/integration/http.test.ts` + `examples/http/`
-- [ ] `packages/tcp/src/` + `packages/tcp/tests/integration/tcp.test.ts` + `examples/tcp/`
-- [ ] `packages/ws/src/` + `packages/ws/tests/integration/ws.test.ts` + `examples/ws/`
+
+#### HTTP — COMPLETE ✅
+- [x] `packages/http/src/server.ts` — `HttpServerTransport`
+- [x] `packages/http/src/client.ts` — `HttpClientTransport`
+- [x] `packages/http/src/index.ts` (replace stub)
+- [x] `packages/http/tests/integration/http.test.ts`
+- [x] `examples/http/server.ts`, `examples/http/client.ts`
+- [x] `packages/http/README.md` updated with real API docs
+- [x] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [x] `examples/package.json` — dep + scripts added
+- [x] `docs/TODO.md` section marked `COMPLETE ✅`
+
+#### TCP — COMPLETE ✅
+- [x] `packages/tcp/src/framing.ts` — `IFramer` interface + `NdJsonFramer`
+- [x] `packages/tcp/src/server.ts` — `TcpServerTransport`
+- [x] `packages/tcp/src/client.ts` — `TcpClientTransport`
+- [x] `packages/tcp/src/index.ts` (replace stub)
+- [x] `packages/tcp/tests/integration/tcp.test.ts`
+- [x] `examples/tcp/server.ts`, `examples/tcp/client.ts`, `examples/tcp/custom-framing.ts`
+- [x] `packages/tcp/README.md` updated with real API docs
+- [x] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [x] `examples/package.json` — dep + scripts added
+- [x] `docs/TODO.md` section marked `COMPLETE ✅`
+
+#### WebSocket — pending
+- [ ] `packages/ws/src/server.ts` — `WsServerTransport`
+- [ ] `packages/ws/src/client.ts` — `WsClientTransport`
+- [ ] `packages/ws/src/index.ts` (replace stub)
+- [ ] `packages/ws/tests/integration/ws.test.ts`
+- [ ] `examples/ws/server.ts`, `examples/ws/client.ts`
+- [ ] `packages/ws/README.md` updated with real API docs
+- [ ] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [ ] `examples/package.json` — dep + scripts added
+- [ ] `docs/TODO.md` section marked `COMPLETE ✅`
 
 ### Phase 4 — Framework Adapters (implement in any order)
-- [ ] `packages/express/src/index.ts` + `packages/express/tests/integration/express.test.ts` + `examples/express/`
-- [ ] `packages/fastify/src/index.ts` + `packages/fastify/tests/integration/fastify.test.ts` + `examples/fastify/`
-- [ ] `packages/nestjs/src/` + `packages/nestjs/tests/integration/nestjs.test.ts` + `examples/nestjs/`
+
+#### Express — pending
+- [ ] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory
+- [ ] `packages/express/tests/integration/express.test.ts`
+- [ ] `examples/express/server.ts`, `examples/express/client.ts`
+- [ ] `packages/express/README.md` updated with real API docs
+- [ ] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [ ] `examples/package.json` — dep + scripts added
+- [ ] `docs/TODO.md` section marked `COMPLETE ✅`
+
+#### Fastify — pending
+- [ ] `packages/fastify/src/index.ts` — `jsonRpcFastify()` plugin factory
+- [ ] `packages/fastify/tests/integration/fastify.test.ts`
+- [ ] `examples/fastify/server.ts`, `examples/fastify/client.ts`
+- [ ] `packages/fastify/README.md` updated with real API docs
+- [ ] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [ ] `examples/package.json` — dep + scripts added
+- [ ] `docs/TODO.md` section marked `COMPLETE ✅`
+
+#### NestJS — pending
+- [ ] `packages/nestjs/src/module.ts`, `decorator.ts`, `service.ts`, `index.ts`
+- [ ] `packages/nestjs/tests/integration/nestjs.test.ts`
+- [ ] `examples/nestjs/server.ts`, `examples/nestjs/client.ts`
+- [ ] `packages/nestjs/README.md` updated with real API docs
+- [ ] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [ ] `examples/package.json` — dep + scripts added
+- [ ] `docs/TODO.md` section marked `COMPLETE ✅`
 
 ### Phase 5 — Polish
-- [ ] Verify `package.json` exports map is complete
+- [ ] Verify `package.json` exports map is complete for all packages
 - [ ] Verify all entry points are included in `tsup.config.ts`
 - [ ] Ensure `README.md` examples match the actual exported API names
 
@@ -235,6 +292,28 @@ Runnable examples live in `examples/` at the monorepo root (not in `packages/`).
 
 These rules apply whenever code in this repo changes. Follow them on every PR.
 
+### After implementing a new transport or adapter
+
+Complete **all** of the following before marking the work done:
+
+1. **`docs/TODO.md`** — mark every checklist item for the feature as `[x]`. Change the section header to `COMPLETE ✅`.
+2. **`packages/{name}/README.md`** — replace the "Status: Not yet implemented" stub with:
+   - Real constructor signatures and option tables
+   - Copy-pasteable usage code blocks (server + client side)
+   - HTTP response codes or other transport-specific behaviour notes
+3. **Root `README.md`**:
+   - Change the package row status from `🚧 Planned` to `✅ Stable`
+   - Add the package to the `pnpm add` install block
+   - Add a Quick Start sub-section (`### {Transport}`) with Server + Client snippets
+   - Add the transport's example commands to the Examples section
+4. **`examples/{name}/`** — provide at least `server.ts` and `client.ts` (standalone, runnable, exit cleanly after demo).
+5. **`examples/package.json`**:
+   - Add the new `@jsontpc/{name}` package to `dependencies` as `workspace:*`
+   - Add npm scripts: `"{name}:server"`, `"{name}:client"`, and any other example scripts
+6. **Table of Contents** — if the root `README.md` uses a ToC, add the new Quick Start heading.
+
+### General rules
+
 - **After implementing any feature:** mark the corresponding items in `docs/TODO.md` as `[x]` and update the package's `README.md` to reflect the actual exported API.
 - **`docs/ARCHITECTURE.md` is design-only.** It describes how the system works. Never add phase markers, TODO annotations, or implementation-status notes to it.
 - **Root `README.md` shows only implemented, published features.** Unimplemented design details belong in `docs/ARCHITECTURE.md`. Pending tasks belong in `docs/TODO.md`. Unimplemented packages have their own stub `README.md` under `packages/*/README.md`.
@@ -284,5 +363,10 @@ Before marking a PR ready:
 - [ ] `pnpm check:attw` passes (types resolve for both ESM and CJS consumers)
 - [ ] No `any` types introduced
 - [ ] New public API is documented in the package's `README.md`; root `README.md` shows only implemented features
-- [ ] If a new transport or adapter was added, its `packages/*/package.json` exports map is
-  complete and it appears in the root `turbo.json` pipeline
+- [ ] If a new transport or adapter was added:
+  - [ ] `packages/*/README.md` has real API docs (no "Not yet implemented" stub)
+  - [ ] Root `README.md` package table shows `✅ Stable`, install block and Quick Start section updated, examples section updated
+  - [ ] `examples/{name}/server.ts` and `examples/{name}/client.ts` exist and are runnable
+  - [ ] `examples/package.json` has the new dep + scripts
+  - [ ] `docs/TODO.md` section marked `COMPLETE ✅`
+  - [ ] `packages/*/package.json` exports map is complete and it appears in the root `turbo.json` pipeline

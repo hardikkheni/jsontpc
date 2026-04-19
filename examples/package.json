@@ -11,11 +11,14 @@
     "core:custom-adapter": "tsx core/custom-adapter.ts",
     "tcp:server": "tsx tcp/server.ts",
     "tcp:client": "tsx tcp/client.ts",
-    "tcp:custom-framing": "tsx tcp/custom-framing.ts"
+    "tcp:custom-framing": "tsx tcp/custom-framing.ts",
+    "http:server": "tsx http/server.ts",
+    "http:client": "tsx http/client.ts"
   },
   "dependencies": {
     "@jsontpc/core": "workspace:*",
-    "@jsontpc/tcp": "workspace:*"
+    "@jsontpc/tcp": "workspace:*",
+    "@jsontpc/http": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.0.0",
