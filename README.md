@@ -22,6 +22,7 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
   - [Custom Adapters](#custom-adapters)
 - [Error Codes](#error-codes)
 - [Examples](#examples)
+- [v0.2 Roadmap](#v02-roadmap)
 - [Contributing](#contributing)
 
 ---
@@ -37,6 +38,7 @@ A transport-agnostic, fully-typed **JSON-RPC 1.0 + 2.0** library for Node.js wri
 | [`@jsontpc/express`](packages/express/README.md) | 🚧 Planned | Express middleware adapter |
 | [`@jsontpc/fastify`](packages/fastify/README.md) | 🚧 Planned | Fastify plugin adapter |
 | [`@jsontpc/nestjs`](packages/nestjs/README.md) | 🚧 Planned | NestJS dynamic module + decorator adapter |
+| [`@jsontpc/pubsub`](packages/pubsub/README.md) | 🗓 Planned (v0.2) | Pub/sub server push, subscription registry, polling fallback, EventBus |
 
 ---
 
@@ -236,6 +238,67 @@ pnpm --filter jsontpc-examples tcp:custom-framing  # Length-prefix framer demo
 ```
 
 See [`examples/`](examples/) for the full list.
+
+---
+
+## v0.2 Roadmap
+
+The following features are planned for the v0.2 release. All additions will be fully backward-compatible.
+
+### Typed Context
+
+Thread a `TContext` generic through procedures, the server, and adapter helpers. Use `createProcedure<MyContext>()` to get a fully-typed `context` argument in handlers — no casts required.
+
+```ts
+// 🗓 Planned
+const p = createProcedure<{ userId: string; role: string }>();
+const server = new JsonRpcServer<typeof router, MyContext>(router);
+server.handle(req, { userId: '42', role: 'admin' }); // type-safe
+```
+
+New exports from `@jsontpc/core`: `createProcedure<TContext>()`
+
+### Middleware 🗓 Planned
+
+Composable `next()`-style middleware at the global server level and per-procedure level.
+
+```ts
+// 🗓 Planned
+server.use(async (ctx, next) => { /* auth */ await next(); });
+
+router = createRouter({
+  secure: procedure
+    .use(async (ctx, next) => { /* ACL */ await next(); })
+    .handler(fn),
+});
+```
+
+Execution order: global middleware → per-procedure middleware → input validation → handler.
+
+New exports from `@jsontpc/core`: `MiddlewareFn<TContext>`, `MiddlewareContext<TContext>`
+
+### Pub/Sub (`@jsontpc/pubsub`)
+
+Server-to-client push notifications over TCP and WebSocket, with a transparent polling fallback for HTTP. Includes a typed in-process `EventBus` for intra-handler communication.
+
+```ts
+// 🗓 Planned
+import { PubSubServer, createPubSubClient, EventBus } from '@jsontpc/pubsub';
+
+// Server-side — push to subscribers
+const pubsub = new PubSubServer(server, transport);
+await pubsub.publish('prices.updated', { symbol: 'BTC', price: 65000 });
+
+// Client-side — receive push notifications (or auto-poll over HTTP)
+const client = createPubSubClient<typeof router>(transport);
+await client.$subscribe('prices.updated', (data) => console.log(data));
+```
+
+New package: `@jsontpc/pubsub` (depends on `@jsontpc/core`).
+New interfaces in `@jsontpc/core`: `IPubSubTransport`, `IEventBus<TEvents>`
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) sections 11–13 for the full design.
+See [docs/TODO.md](docs/TODO.md) Phases 6–8 for the implementation checklist.
 
 ---
 

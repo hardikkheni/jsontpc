@@ -115,3 +115,135 @@
 - [ ] `README.md` install examples use `@jsontpc/*` scoped package names
 - [ ] `README.md` API examples match actual exported names
 - [ ] Cut first release: `pnpm changeset` → merge "Version Packages" PR → v0.1.0 on npm
+
+---
+
+> ## 🗓 Planned — v0.2
+>
+> The following phases describe planned features for the v0.2 release.
+> They are **not** yet implemented. No code changes should be made to these sections
+> until Phases 1–5 are fully complete and v0.1.0 is published.
+
+### Phase 6 — Typed Context 🗓 Planned
+
+> **Goal:** Allow routers and servers to carry a typed `TContext` generic so handlers receive a
+> fully-typed `context` argument instead of `unknown`. All changes are backward-compatible —
+> existing code continues to compile without modification.
+
+#### `packages/core` — typed context generics
+
+- [ ] `packages/core/src/router.ts` — add optional `TContext = unknown` generic to `ProcedureBuilder<TIn, TOut, TContext>`, `ProcedureDef<TIn, TOut, TContext>`, and `HandlerContext<TIn, TContext>`
+- [ ] `packages/core/src/router.ts` — export new factory `createProcedure<TContext>()` → returns `ProcedureBuilder<unknown, unknown, TContext>`; existing `procedure` singleton unchanged
+- [ ] `packages/core/src/server.ts` — add optional `TContext = unknown` generic to `JsonRpcServer<TRouter, TContext>`; `handle(req, context?: TContext)` and `handleBatch(requests, context?: TContext)` become type-safe
+- [ ] `packages/core/src/adapter.ts` — `createRequestHandler<TContext>(server: JsonRpcServer<Router, TContext>)` and `bindAdapter<TReq, TRes, TContext>(...)` gain optional context generic
+- [ ] `packages/core/src/index.ts` — export `createProcedure`
+- [ ] `packages/core/tests/unit/router.test.ts` — extend with typed-context test cases
+- [ ] `packages/core/tests/unit/server.test.ts` — extend with typed-context test cases
+- [ ] `packages/core/tests/unit/adapter.test.ts` — extend with typed-context test cases
+- [ ] `packages/core/README.md` — document `createProcedure<TContext>()` usage
+- [ ] `docs/ARCHITECTURE.md` — update Section 3 (Procedure Builder) and Section 4 (JsonRpcServer) with typed-context details
+
+- [ ] `pnpm typecheck` passes
+- [ ] `pnpm test` passes (no regressions)
+
+### Phase 7 — Middleware Pipeline 🗓 Planned
+
+> **Goal:** Add composable middleware to `@jsontpc/core`. Middleware runs in a defined order:
+> global server middleware → per-procedure middleware → input validation → handler → output
+> validation. All changes are additive and backward-compatible.
+
+#### `packages/core` — middleware
+
+- [ ] `packages/core/src/middleware.ts` — define `MiddlewareContext<TContext>` interface and `MiddlewareFn<TContext>` type:
+  - `MiddlewareContext<TContext>` carries `{ method: string; rawParams: unknown; context: TContext; result?: unknown; error?: JsonRpcError }`
+  - `MiddlewareFn<TContext> = (ctx: MiddlewareContext<TContext>, next: () => Promise<void>) => Promise<void>`
+- [ ] `packages/core/src/router.ts` — add `.use(...middleware: MiddlewareFn<TContext>[])` to `ProcedureBuilder`; add `middleware?: MiddlewareFn<TContext>[]` field to `ProcedureDef`
+- [ ] `packages/core/src/server.ts` — add `server.use(...middleware: MiddlewareFn<TContext>[])` for global middleware; compose global + per-procedure middleware chain in `handle()` dispatch order
+- [ ] `packages/core/src/index.ts` — export `MiddlewareFn`, `MiddlewareContext`
+- [ ] `packages/core/tests/unit/middleware.test.ts` — new test file covering:
+  - Global middleware runs before handler
+  - Per-procedure middleware runs after global middleware
+  - Middleware can mutate `ctx.context` (context enrichment)
+  - Throwing `JsonRpcError` short-circuits to error response
+  - Throwing plain `Error` produces `INTERNAL_ERROR` (same wrapping as handler errors)
+  - Skipping `next()` suppresses the handler
+  - Execution order: global 1 → global 2 → procedure 1 → procedure 2 → handler
+- [ ] `packages/core/README.md` — add Middleware section with usage examples
+- [ ] `docs/ARCHITECTURE.md` — add Section 12 (Middleware Pipeline)
+- [ ] `examples/core/middleware.ts` — runnable example showing auth middleware pattern
+- [ ] `examples/package.json` — add `core:middleware` script
+
+- [ ] `pnpm typecheck` passes
+- [ ] `pnpm test` passes (no regressions)
+
+### Phase 8 — Pub/Sub & Event Bus 🗓 Planned
+
+> **Goal:** Enable server-to-client push notifications over persistent transports (TCP, WS)
+> with an automatic polling fallback for HTTP. Add a typed internal event bus injectable via
+> context. Prerequisite: Phase 3 WebSocket transport must be complete before WS pub/sub.
+
+#### `packages/core` — pub/sub interfaces
+
+- [ ] `packages/core/src/pubsub.ts` — define `IPubSubTransport extends IServerTransport` interface:
+  - `readonly supportsPush: true` (type discriminant)
+  - `sendToConnection(connectionId: string, message: string): Promise<void>`
+  - `onConnection(handler: (connectionId: string) => void): void`
+  - `onDisconnect(handler: (connectionId: string) => void): void`
+- [ ] `packages/core/src/pubsub.ts` — define `IEventBus<TEvents extends Record<string, unknown>>` interface:
+  - `on<K extends keyof TEvents>(event: K, listener: (data: TEvents[K]) => void): () => void` (returns unsubscribe fn)
+  - `off<K extends keyof TEvents>(event: K, listener: (data: TEvents[K]) => void): void`
+  - `emit<K extends keyof TEvents>(event: K, data: TEvents[K]): void`
+- [ ] `packages/core/src/index.ts` — export `IPubSubTransport`, `IEventBus`
+- [ ] `packages/core/README.md` — document new interfaces in a "Pub/Sub Interfaces" section
+- [ ] `docs/ARCHITECTURE.md` — add Section 13 (Pub/Sub & Event Bus)
+
+#### `packages/pubsub/` — new package `@jsontpc/pubsub`
+
+- [ ] `packages/pubsub/package.json` — scaffold: `name: "@jsontpc/pubsub"`, `peerDeps: { "@jsontpc/core": "workspace:*" }`, exports map
+- [ ] `packages/pubsub/tsconfig.json` — extend `../../tsconfig.base.json`
+- [ ] `packages/pubsub/tsup.config.ts` — entry `src/index.ts`, formats `esm` + `cjs`
+- [ ] `packages/pubsub/vitest.config.ts`
+- [ ] `packages/pubsub/README.md` — stub with "Status: Not yet implemented"
+- [ ] `packages/pubsub/src/registry.ts` — `SubscriptionRegistry`: `Map<topic, Set<connectionId>>` with `subscribe(connectionId, topic)`, `unsubscribe(connectionId, topic)`, `getSubscribers(topic): Set<string>`, `removeConnection(connectionId)` (cleans all topics)
+- [ ] `packages/pubsub/src/server.ts` — `PubSubServer<TRouter, TContext>`:
+  - Wraps `JsonRpcServer<TRouter, TContext>` + `IPubSubTransport`
+  - Auto-registers built-in procedures: `rpc.subscribe`, `rpc.unsubscribe`
+  - `publish(topic: string, params: unknown): Promise<void>` — fan-out via `sendToConnection` to all topic subscribers
+  - `broadcast(method: string, params: unknown): Promise<void>` — send to all active connections
+  - Falls back to `PollingAdapter` when transport lacks `supportsPush`
+- [ ] `packages/pubsub/src/polling.ts` — `PollingAdapter`:
+  - Per-connection ring buffer of pending notifications (configurable `maxBuffer`, default 100; configurable `ttlMs`, default 60 000)
+  - Registers `rpc.poll` procedure that flushes and returns buffered items as `{ notifications: Array<{ topic: string; params: unknown }> }`
+  - Automatic buffer eviction by TTL
+- [ ] `packages/pubsub/src/client.ts` — `createPubSubClient<TRouter>(transport: IClientTransport)`:
+  - Wraps `createClient<TRouter>(transport)`
+  - Adds `.$subscribe(topic: string, callback: (params: unknown) => void): Promise<void>` — uses `transport.onMessage` for WS/TCP; starts polling loop for HTTP transports
+  - Adds `.$unsubscribe(topic: string): Promise<void>`
+  - Adds `.$unsubscribeAll(): Promise<void>`
+- [ ] `packages/pubsub/src/event-bus.ts` — `EventBus<TEvents>` class implementing `IEventBus<TEvents>` (Map of topic → Set of listeners)
+- [ ] `packages/pubsub/src/index.ts` — barrel export of all above
+- [ ] `packages/pubsub/tests/integration/pubsub.test.ts` — integration tests:
+  - Subscribe + publish round-trip over TCP (requires `TcpServerTransport` implementing `IPubSubTransport`)
+  - Subscribe + publish round-trip over WS (requires `WsServerTransport` implementing `IPubSubTransport`)
+  - HTTP polling fallback (subscribe → trigger → poll → receive)
+  - `removeConnection` cleans up subscriptions on disconnect
+  - `EventBus` on/off/emit
+- [ ] `packages/pubsub/README.md` — replace stub with real API docs
+- [ ] `pnpm-workspace.yaml` — add `packages/pubsub`
+- [ ] `turbo.json` — add `@jsontpc/pubsub` to the build pipeline
+- [ ] Root `README.md` — update `@jsontpc/pubsub` row to `✅ Stable`, add install + Quick Start
+
+#### Transport integration
+
+- [ ] `packages/tcp/src/server.ts` — implement `IPubSubTransport` (expose connection tracking already implicit in per-socket handling)
+- [ ] `packages/ws/src/server.ts` — implement `IPubSubTransport` (prerequisite: Phase 3 WS transport complete)
+
+#### Examples
+
+- [ ] `examples/pubsub/tcp-server.ts` — `PubSubServer` over TCP; publishes a counter every second
+- [ ] `examples/pubsub/tcp-client.ts` — subscribes, receives push notifications, exits after 5 events
+- [ ] `examples/pubsub/http-polling-server.ts` — `PubSubServer` with HTTP polling fallback
+- [ ] `examples/pubsub/http-polling-client.ts` — polls for notifications, prints results, exits
+- [ ] `examples/pubsub/event-bus.ts` — `EventBus` used inside handlers via typed context
+- [ ] `examples/package.json` — add `@jsontpc/pubsub workspace:*` dep and `pubsub:*` scripts
+- [ ] `docs/TODO.md` section marked `COMPLETE ✅` when all items above are done

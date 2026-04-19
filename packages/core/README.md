@@ -176,3 +176,82 @@ All JSON-RPC wire shapes are exported as plain TypeScript interfaces:
 `AnyRequest` · `AnyResponse` · `AnyBatch`
 
 Type inference helpers: `InferProcedureInput<T>` · `InferProcedureOutput<T>` · `InferRouterInput<R>` · `InferRouterOutput<R>`
+
+---
+
+## Coming in v0.2 🗓 Planned
+
+The following features are designed and planned for the v0.2 release. They are fully backward-compatible — no existing code will require changes.
+
+### Typed Context
+
+A new `createProcedure<TContext>()` factory will thread a typed context generic through procedures, the server, and the adapter layer:
+
+```ts
+// 🗓 Planned API
+import { createProcedure, JsonRpcServer } from '@jsontpc/core';
+
+interface MyContext { userId: string; role: 'admin' | 'user' }
+
+const p = createProcedure<MyContext>();
+
+const router = createRouter({
+  whoAmI: p.handler(({ context }) => ({
+    // context: MyContext — fully typed, no cast needed
+    id: context.userId,
+    role: context.role,
+  })),
+});
+
+const server = new JsonRpcServer<typeof router, MyContext>(router);
+server.handle(req, { userId: '42', role: 'admin' }); // type-safe
+```
+
+The existing `procedure` singleton and `new JsonRpcServer(router)` continue to work unchanged (`TContext` defaults to `unknown`).
+
+New export: `createProcedure<TContext>()`
+
+### Middleware
+
+Global server middleware and per-procedure middleware via a composable `next()`-style pipeline:
+
+```ts
+// 🗓 Planned API
+import { type MiddlewareFn } from '@jsontpc/core';
+
+// Global: runs for every procedure
+server.use(async (ctx, next) => {
+  if (!isAuthorized(ctx.context)) {
+    throw new JsonRpcError('Unauthorized', -32001);
+  }
+  await next();
+});
+
+// Per-procedure: chained on the builder
+const router = createRouter({
+  adminOnly: p
+    .use(async (ctx, next) => {
+      if (ctx.context.role !== 'admin') throw new JsonRpcError('Forbidden', -32003);
+      await next();
+    })
+    .handler(fn),
+});
+```
+
+Execution order: global middleware → per-procedure middleware → input validation → handler → output validation.
+
+New exports: `MiddlewareFn<TContext>`, `MiddlewareContext<TContext>`
+
+### Pub/Sub Interfaces
+
+Core will gain two new interfaces (implementations live in `@jsontpc/pubsub`):
+
+```ts
+// 🗓 Planned API
+import { type IPubSubTransport, type IEventBus } from '@jsontpc/core';
+```
+
+- `IPubSubTransport extends IServerTransport` — implemented by TCP and WS transports; adds `sendToConnection`, `onConnection`, `onDisconnect`
+- `IEventBus<TEvents>` — typed in-process event bus interface
+
+See [`@jsontpc/pubsub`](../pubsub/README.md) for the full pub/sub implementation (server push, polling fallback, subscription registry, typed EventBus). Planned for v0.2.

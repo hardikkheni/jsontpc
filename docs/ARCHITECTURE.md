@@ -36,7 +36,24 @@ This document describes the internal design of `jsontpc` — how the layers fit 
 8. [Error Handling](#8-error-handling)
 9. [Package Layout & Build](#9-package-layout--build)
 10. [Design Decisions & Trade-offs](#10-design-decisions--trade-offs)
-11. [Examples](#11-examples)
+11. [Typed Context — Planned (v0.2)](#11-typed-context--planned-v02)
+    - [createProcedure Factory](#111-createprocedure-factory)
+    - [JsonRpcServer TContext Generic](#112-jsonrpcserver-tcontext-generic)
+    - [Adapter Context Generics](#113-adapter-context-generics)
+12. [Middleware Pipeline — Planned (v0.2)](#12-middleware-pipeline--planned-v02)
+    - [MiddlewareContext & MiddlewareFn](#121-middlewarecontext--middlewarefn)
+    - [Global Middleware](#122-global-middleware)
+    - [Per-Procedure Middleware](#123-per-procedure-middleware)
+    - [Execution Order](#124-execution-order)
+13. [Pub/Sub & Event Bus — Planned (v0.2)](#13-pubsub--event-bus--planned-v02)
+    - [IPubSubTransport Interface](#131-ipubsubtransport-interface)
+    - [PubSubServer](#132-pubsubserver)
+    - [Polling Fallback](#133-polling-fallback)
+    - [PubSub Client](#134-pubsub-client)
+    - [IEventBus & EventBus](#135-ieventbus--eventbus)
+    - [Wire Protocol](#136-wire-protocol)
+    - [Package Layout (v0.2)](#137-package-layout-v02)
+14. [Examples](#14-examples)
 
 ---
 
@@ -602,7 +619,321 @@ import { JsonRpcError } from './errors.js';
 
 ---
 
-## 11. Examples
+## 11. Typed Context — Planned (v0.2)
+
+> **🗓 Planned (v0.2)** — This section describes a feature that has not yet been implemented.
+> Design is final; implementation will begin after v0.1.0 is published (Phase 5 complete).
+
+Today `HandlerContext.context` is typed as `unknown`, requiring manual casts inside every handler. v0.2 threads an optional `TContext` generic through the procedure builder, router, server, and adapter layers so that context is fully type-safe end-to-end with zero breaking changes.
+
+### 11.1 `createProcedure` Factory
+
+A new `createProcedure<TContext>()` factory returns a `ProcedureBuilder<unknown, unknown, TContext>`:
+
+```ts
+import { createProcedure, createRouter, JsonRpcServer } from '@jsontpc/core';
+
+interface MyContext {
+  userId: string;
+  role: 'admin' | 'user';
+}
+
+const p = createProcedure<MyContext>();
+
+const router = createRouter({
+  whoAmI: p.handler(({ context }) => {
+    // context: MyContext — fully typed, no cast needed
+    return { id: context.userId, role: context.role };
+  }),
+});
+```
+
+The existing `procedure` singleton is unchanged — it is equivalent to `createProcedure<unknown>()` and continues to work without modification.
+
+### 11.2 `JsonRpcServer` TContext Generic
+
+`JsonRpcServer` gains a second optional generic `TContext = unknown`:
+
+```ts
+const server = new JsonRpcServer<typeof router, MyContext>(router);
+// server.handle(req, context: MyContext)  ← type-safe
+// server.handleBatch(batch, context: MyContext)
+```
+
+When `TContext` is omitted the server behaves exactly as before.
+
+### 11.3 Adapter Context Generics
+
+`createRequestHandler` and `bindAdapter` gain matching optional context generics:
+
+```ts
+const handle = createRequestHandler<MyContext>(server);
+// (rawBody: string, context?: MyContext) => Promise<string | null>
+
+const rpcHandler = bindAdapter<MyReq, MyRes, MyContext>(server, adapter);
+// (req: MyReq, res: MyRes, context?: MyContext) => Promise<void>
+```
+
+All generic parameters default to `unknown` — no change at call sites that do not opt in.
+
+---
+
+## 12. Middleware Pipeline — Planned (v0.2)
+
+> **🗓 Planned (v0.2)** — This section describes a feature that has not yet been implemented.
+
+Middleware intercepts every dispatch cycle. It is composable (multiple middleware can be stacked), reusable, and strongly typed via the `TContext` generic introduced in Section 11.
+
+### 12.1 `MiddlewareContext` & `MiddlewareFn`
+
+Defined in the new `packages/core/src/middleware.ts`:
+
+```ts
+interface MiddlewareContext<TContext = unknown> {
+  method: string;        // name of the procedure being dispatched
+  rawParams: unknown;    // params before input-schema validation
+  context: TContext;     // mutable — middleware may enrich or replace this
+  result?: unknown;      // set after the handler returns (post-middleware can read it)
+  error?: JsonRpcError;  // set if the handler or an earlier middleware threw
+}
+
+type MiddlewareFn<TContext = unknown> =
+  (ctx: MiddlewareContext<TContext>, next: () => Promise<void>) => Promise<void>;
+```
+
+### 12.2 Global Middleware
+
+Global middleware is registered on the server instance and runs for **every** procedure:
+
+```ts
+server.use(async (ctx, next) => {
+  // Pre-handler: auth, rate limiting, logging
+  if (!isAuthorized(ctx.context)) {
+    throw new JsonRpcError('Unauthorized', -32001);
+  }
+  await next();
+  // Post-handler: response logging, metrics
+  console.log(`${ctx.method} → ok`);
+});
+```
+
+### 12.3 Per-Procedure Middleware
+
+Per-procedure middleware is chained on the builder and runs only for that procedure:
+
+```ts
+const p = createProcedure<MyContext>();
+
+const router = createRouter({
+  adminOnly: p
+    .use(async (ctx, next) => {
+      if (ctx.context.role !== 'admin') {
+        throw new JsonRpcError('Forbidden', -32003);
+      }
+      await next();
+    })
+    .input(schema)
+    .handler(fn),
+});
+```
+
+`.use()` may be called multiple times; middleware is composed left-to-right.
+
+### 12.4 Execution Order
+
+```
+Incoming request
+  │
+  ├─ global middleware 1
+  │    ├─ global middleware 2
+  │    │    ├─ per-procedure middleware 1
+  │    │    │    ├─ per-procedure middleware 2
+  │    │    │    │    ├─ inputSchema.parse(rawParams)
+  │    │    │    │    ├─ handler({ input, context })
+  │    │    │    │    └─ outputSchema.parse(result)  [dev only]
+  │    │    │    └─ ← post (procedure 2)
+  │    │    └─ ← post (procedure 1)
+  │    └─ ← post (global 2)
+  └─ ← post (global 1)
+```
+
+If any middleware throws a `JsonRpcError`, subsequent middleware and the handler are skipped and the error is returned to the caller. Throwing a plain `Error` produces an `INTERNAL_ERROR(-32603)` (same wrapping rules as handler errors, including the `NODE_ENV` production guard).
+
+---
+
+## 13. Pub/Sub & Event Bus — Planned (v0.2)
+
+> **🗓 Planned (v0.2)** — This section describes a feature that has not yet been implemented.
+> Prerequisite: Phase 3 WebSocket transport must be complete before WS pub/sub can be added.
+> TCP pub/sub can be implemented independently.
+
+v0.2 adds first-class support for server-to-client push notifications. The design layers cleanly on top of existing transport and server primitives:
+
+- **`IPubSubTransport`** and **`IEventBus`** interfaces live in `@jsontpc/core` (keeps the core lean; other packages type-check against them without new deps)
+- Concrete implementations (`PubSubServer`, `SubscriptionRegistry`, `PollingAdapter`, `EventBus`) live in the new **`@jsontpc/pubsub`** package
+- Transports that support persistent connections (`@jsontpc/tcp`, `@jsontpc/ws`) implement `IPubSubTransport`; HTTP transports fall back to polling
+
+### 13.1 `IPubSubTransport` Interface
+
+Defined in `packages/core/src/pubsub.ts`:
+
+```ts
+interface IPubSubTransport extends IServerTransport {
+  readonly supportsPush: true;   // type discriminant — duck-typeable
+  sendToConnection(connectionId: string, message: string): Promise<void>;
+  onConnection(handler: (connectionId: string) => void): void;
+  onDisconnect(handler: (connectionId: string) => void): void;
+}
+```
+
+`TcpServerTransport` and `WsServerTransport` will implement `IPubSubTransport`. HTTP transports do not — `PubSubServer` detects this at construction time and activates `PollingAdapter`.
+
+### 13.2 `PubSubServer`
+
+`PubSubServer<TRouter, TContext>` wraps an existing `JsonRpcServer` and an `IPubSubTransport` (or any `IServerTransport` for the polling path):
+
+```ts
+import { PubSubServer } from '@jsontpc/pubsub';
+
+const pubsub = new PubSubServer(server, transport);
+await pubsub.listen(4000);
+
+// Publish to all subscribers of a topic
+await pubsub.publish('prices.updated', { symbol: 'BTC', price: 65000 });
+
+// Broadcast a notification to every connected client
+await pubsub.broadcast('system.maintenance', { message: 'Back in 5 min' });
+```
+
+`PubSubServer` automatically registers two built-in procedures on the underlying `JsonRpcServer`:
+
+| Method | Params | Description |
+|--------|--------|-------------|
+| `rpc.subscribe` | `{ topic: string }` | Subscribe the connection to a topic |
+| `rpc.unsubscribe` | `{ topic: string }` | Unsubscribe from a topic |
+
+### 13.3 Polling Fallback
+
+When the transport does not implement `IPubSubTransport`, `PubSubServer` activates the built-in `PollingAdapter`:
+
+- Each connection (identified by a request-scoped token) gets a ring buffer of pending notifications
+- A third built-in procedure `rpc.poll` is registered; the client calls it periodically
+- `rpc.poll` returns `{ notifications: Array<{ topic: string; params: unknown }> }` and clears the buffer
+- Buffer is configurable: `maxBuffer` (default 100 items) and `ttlMs` (default 60 000 ms)
+
+### 13.4 PubSub Client
+
+`createPubSubClient<TRouter>(transport)` wraps `createClient<TRouter>` and adds subscription helpers:
+
+```ts
+import { createPubSubClient } from '@jsontpc/pubsub';
+
+const client = createPubSubClient<typeof router>(transport);
+
+// Subscribe — uses transport.onMessage for WS/TCP, auto-polls for HTTP
+await client.$subscribe('prices.updated', (params) => {
+  console.log('price update:', params);
+});
+
+// Unsubscribe from a single topic
+await client.$unsubscribe('prices.updated');
+
+// Unsubscribe from all topics and stop any polling loops
+await client.$unsubscribeAll();
+```
+
+All existing methods on the typed proxy (`client.myMethod(params)`) continue to work unchanged.
+
+### 13.5 `IEventBus` & `EventBus`
+
+For intra-server communication, a typed event bus can be injected via context:
+
+```ts
+import { EventBus } from '@jsontpc/pubsub';
+
+interface AppEvents {
+  'order.placed': { orderId: string; amount: number };
+  'user.created': { userId: string };
+}
+
+// Create once, pass via context
+const bus = new EventBus<AppEvents>();
+
+bus.on('order.placed', ({ orderId }) => console.log('new order', orderId));
+
+// Inside a handler:
+handler: ({ context }) => {
+  context.bus.emit('order.placed', { orderId: '123', amount: 99 });
+}
+```
+
+`EventBus` is **not** a singleton — create one per application and pass it via the typed context (see Section 11). This keeps the server stateless and testable.
+
+### 13.6 Wire Protocol
+
+All pub/sub messages use standard JSON-RPC 2.0 wire format — no new framing or protocol extensions.
+
+| Direction | Shape | Description |
+|-----------|-------|-------------|
+| Client → Server | `{ jsonrpc: "2.0", method: "rpc.subscribe", params: { topic }, id }` | Subscribe request (expects response) |
+| Client → Server | `{ jsonrpc: "2.0", method: "rpc.unsubscribe", params: { topic }, id }` | Unsubscribe request |
+| Client → Server | `{ jsonrpc: "2.0", method: "rpc.poll", id }` | Poll request (HTTP fallback only) |
+| Server → Client | `{ jsonrpc: "2.0", method: topic, params: data }` | Push notification (no `id` — standard JSON-RPC notification) |
+
+### 13.7 Package Layout (v0.2)
+
+```
+packages/
+  core/
+    src/
+      pubsub.ts           ← IPubSubTransport, IEventBus interfaces (new)
+      middleware.ts       ← MiddlewareContext, MiddlewareFn (new)
+      ... (existing files unchanged)
+  pubsub/                 ← @jsontpc/pubsub (new package)
+    src/
+      registry.ts         ← SubscriptionRegistry
+      server.ts           ← PubSubServer
+      polling.ts          ← PollingAdapter
+      client.ts           ← createPubSubClient
+      event-bus.ts        ← EventBus<TEvents>
+      index.ts
+    tests/integration/
+      pubsub.test.ts
+```
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                       Application Code                           │
+└────────────────────────┬─────────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────────────┐
+│                          CORE                                    │
+│  types · errors · protocol · router · server · client · adapter  │
+│  middleware.ts  (MiddlewareFn, MiddlewareContext)                 │
+│  pubsub.ts      (IPubSubTransport, IEventBus)       (v0.2 new)  │
+└────────┬──────────────────────────────────┬──────────────────────┘
+         │ IServerTransport / IPubSubTransport│ IClientTransport
+┌────────▼────────┐                ┌─────────▼──────────────────┐
+│  Server         │                │  Client                    │
+│  Transports     │                │  Transports                │
+│  http · tcp · ws│                │  http · tcp · ws           │
+└────────┬────────┘                └─────────┬──────────────────┘
+         │                                   │
+┌────────▼───────────────────────────────────▼──────────────────┐
+│                  @jsontpc/pubsub  (v0.2 new)                   │
+│  PubSubServer · SubscriptionRegistry · PollingAdapter          │
+│  createPubSubClient · EventBus                                 │
+└────────────────────────────────────────────────────────────────┘
+         │
+┌────────▼──────────────────────────────────────────────────────┐
+│                   Framework Adapters                           │
+│               express · fastify · nestjs                       │
+└───────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 14. Examples
 
 Runnable examples live in `examples/` at the monorepo root. Each sub-folder maps to a package.
 

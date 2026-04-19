@@ -217,6 +217,22 @@ Work through phases **in order**. Do not start a later phase until the current o
 
 ---
 
+> ## 🗓 v0.2 — Planned Features
+>
+> Do not begin Phase 6–8 work until Phases 1–5 are fully complete and v0.1.0 is published.
+> All v0.2 additions must be backward-compatible (no breaking changes — new generics default to `unknown`).
+>
+> **Phase 6 — Typed Context:** Thread a `TContext` generic through `ProcedureBuilder`, `JsonRpcServer`, and adapter helpers. New export: `createProcedure<TContext>()`.
+>
+> **Phase 7 — Middleware Pipeline:** `MiddlewareFn<TContext>` / `MiddlewareContext<TContext>` in `@jsontpc/core`. Global middleware via `server.use()`, per-procedure via `procedure.use()`. New exports: `MiddlewareFn`, `MiddlewareContext`.
+>
+> **Phase 8 — Pub/Sub & Event Bus:** New interfaces `IPubSubTransport` / `IEventBus` in `@jsontpc/core`. New package `@jsontpc/pubsub` (`PubSubServer`, `SubscriptionRegistry`, `PollingAdapter`, `createPubSubClient`, `EventBus`). TCP and WS transports implement `IPubSubTransport`; HTTP falls back to polling.
+>
+> Full implementation checklists: [`docs/TODO.md`](docs/TODO.md) Phases 6–8.
+> Full design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) sections 11–13.
+
+---
+
 ## Coding Conventions
 
 ### TypeScript
