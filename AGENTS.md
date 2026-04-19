@@ -26,6 +26,10 @@ jsontpc-workspace/              ← monorepo root (private, not published)
         server.ts               ← JsonRpcServer (dispatch engine) + IServerTransport
         client.ts               ← createClient<TRouter> proxy factory + IClientTransport
         adapter.ts              ← IFrameworkAdapter, createRequestHandler, bindAdapter
+        plugin.ts               ← IServerPlugin interface  (v0.2 new)
+        plugins/
+          introspection.ts      ← IntrospectionPlugin (rpc.describe)  (v0.2 new)
+          health.ts             ← HealthPlugin (rpc.ping)  (v0.2 new)
         index.ts                ← Barrel re-export
       tests/unit/               ← Pure unit tests (no network I/O)
     http/                       ← @jsontpc/http
@@ -217,6 +221,24 @@ Work through phases **in order**. Do not start a later phase until the current o
 
 ---
 
+> ## 🗓 v0.2 — Planned Features
+>
+> Do not begin Phase 6–9 work until Phases 1–5 are fully complete and v0.1.0 is published.
+> All v0.2 additions must be backward-compatible (no breaking changes — new generics default to `unknown`).
+>
+> **Phase 6 — Plugin System:** `IServerPlugin` interface + `JsonRpcServer.register(plugin)` + `registerProcedure()` in `@jsontpc/core`. Built-in plugins: `IntrospectionPlugin` (`rpc.describe`), `HealthPlugin` (`rpc.ping`). `rpc.*` namespace reserved for first-party plugins.
+>
+> **Phase 7 — Typed Context:** Thread a `TContext` generic through `ProcedureBuilder`, `JsonRpcServer`, and adapter helpers. New export: `createProcedure<TContext>()`.
+>
+> **Phase 8 — Middleware Pipeline:** `MiddlewareFn<TContext>` / `MiddlewareContext<TContext>` in `@jsontpc/core`. Global middleware via `server.use()`, per-procedure via `procedure.use()`. New exports: `MiddlewareFn`, `MiddlewareContext`.
+>
+> **Phase 9 — Pub/Sub & Event Bus:** New interfaces `IPubSubTransport` / `IEventBus` in `@jsontpc/core`. New type utilities `PubSubTopics`, `TopicNotification<TTopics>`, `InferTopicPayload<TTopics, K>` exported from `@jsontpc/core` enable fully type-safe topic→payload mappings. New package `@jsontpc/pubsub` (`PubSubServer<TTopics>` **implements `IServerPlugin`**, `SubscriptionRegistry<TTopics>`, `PollingAdapter<TTopics>`, `createPubSubClient<TRouter, TTopics>`, `EventBus<TEvents>`). `PubSubServer` constructor is `new PubSubServer<TTopics>(transport)` — no `server` argument; `server.register(pubsub)` wires it in; no `listen()` method. `TTopics` defaults to `Record<string, unknown>` — untyped usage stays valid; typed usage enforces correct payloads on `publish`, `broadcast`, and `$subscribe` at compile time with no casts. TCP and WS transports implement `IPubSubTransport`; HTTP falls back to polling via `rpc.poll` with `sessionId` param which returns a typed `TopicNotification<TTopics>` discriminated union.
+>
+> Full implementation checklists: [`docs/TODO.md`](docs/TODO.md) Phases 6–9.
+> Full design: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) sections 11–14.
+
+---
+
 ## Coding Conventions
 
 ### TypeScript
@@ -258,6 +280,8 @@ Work through phases **in order**. Do not start a later phase until the current o
 - Function factory helper: `createRequestHandler(server)`
 - Wiring helper: `bindAdapter(server, adapter)`
 - NestJS decorator: `@JsonRpcHandler`
+- Plugin classes: `{Feature}Plugin` for core built-ins (e.g. `IntrospectionPlugin`, `HealthPlugin`)
+- `rpc.*` namespace is **reserved** for first-party plugins — user procedures must not start with `rpc.`
 - Keep exported names stable — this is a library; renaming is a breaking change
 
 ### Testing
