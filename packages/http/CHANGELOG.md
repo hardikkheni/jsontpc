@@ -1,5 +1,11 @@
 # @jsontpc/http
 
+## 0.1.0
+
+### Minor Changes
+
+- 05bc18e: http transport implemented
+
 ## 0.0.3
 
 ### Patch Changes
