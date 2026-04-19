@@ -31,7 +31,7 @@ const router = createRouter({
 // ---------------------------------------------------------------------------
 
 describe('HttpServerTransport + HttpClientTransport', () => {
-  const PORT = 3202;
+  const PORT = 3211;
   const BASE_URL = `http://127.0.0.1:${PORT}/rpc`;
 
   let serverTransport: HttpServerTransport;
@@ -182,10 +182,10 @@ describe('HttpServerTransport + HttpClientTransport', () => {
   it('oversized body — server responds with 413', async () => {
     const tinyTransport = new HttpServerTransport({ path: '/rpc-tiny', maxMessageSize: 10 });
     tinyTransport.attach(new JsonRpcServer(router));
-    await tinyTransport.listen(3203);
+    await tinyTransport.listen(3212);
 
     try {
-      const res = await fetch('http://127.0.0.1:3203/rpc-tiny', {
+      const res = await fetch('http://127.0.0.1:3212/rpc-tiny', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', method: 'add', params: { a: 1, b: 2 }, id: 1 }),
