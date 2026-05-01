@@ -53,7 +53,7 @@
 - [x] `pnpm typecheck` passes
 - [x] `pnpm test` passes (all unit tests green)
 
-### Phase 3 — Transports (implement one at a time)
+### Phase 3 — Transports (implement one at a time) ✅ COMPLETE
 
 #### HTTP (`packages/http`) — COMPLETE ✅
 - [x] `packages/http/src/server.ts` — `HttpServerTransport`
@@ -63,7 +63,7 @@
 - [x] `examples/http/server.ts` — start an HTTP server
 - [x] `examples/http/client.ts` — call the server via `HttpClientTransport`
 
-#### TCP (`packages/tcp`)
+#### TCP (`packages/tcp`) — COMPLETE ✅
 - [x] `packages/tcp/src/framing.ts` — `IFramer` interface + `NdJsonFramer`
 - [x] `packages/tcp/src/server.ts` — `TcpServerTransport`
 - [x] `packages/tcp/src/client.ts` — `TcpClientTransport`
@@ -72,17 +72,18 @@
 - [x] `examples/tcp/server.ts`
 - [x] `examples/tcp/client.ts`
 - [x] `examples/tcp/custom-framing.ts` — swap `NdJsonFramer` for a custom `IFramer`
+- [x] `pnpm typecheck` passes
+- [x] `pnpm test` passes (all integration tests green)
 
-#### WebSocket (`packages/ws`)
-- [ ] `packages/ws/src/server.ts` — `WsServerTransport`
-- [ ] `packages/ws/src/client.ts` — `WsClientTransport`
-- [ ] `packages/ws/src/index.ts` (replace stub)
-- [ ] `packages/ws/tests/integration/ws.test.ts`
-- [ ] `examples/ws/server.ts`
-- [ ] `examples/ws/client.ts`
-
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm test` passes (all integration tests green)
+#### WebSocket (`packages/ws`) — COMPLETE ✅
+- [x] `packages/ws/src/server.ts` — `WsServerTransport`
+- [x] `packages/ws/src/client.ts` — `WsClientTransport`
+- [x] `packages/ws/src/index.ts` (replace stub)
+- [x] `packages/ws/tests/integration/ws.test.ts`
+- [x] `examples/ws/server.ts`
+- [x] `examples/ws/client.ts`
+- [x] `pnpm typecheck` passes
+- [x] `pnpm test` passes (all integration tests green)
 
 ### Phase 4 — Framework Adapters (implement in any order)
 

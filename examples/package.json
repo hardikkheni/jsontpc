@@ -13,16 +13,20 @@
     "tcp:client": "tsx tcp/client.ts",
     "tcp:custom-framing": "tsx tcp/custom-framing.ts",
     "http:server": "tsx http/server.ts",
-    "http:client": "tsx http/client.ts"
+    "http:client": "tsx http/client.ts",
+    "ws:server": "tsx ws/server.ts",
+    "ws:client": "tsx ws/client.ts"
   },
   "dependencies": {
     "@jsontpc/core": "workspace:*",
     "@jsontpc/tcp": "workspace:*",
-    "@jsontpc/http": "workspace:*"
+    "@jsontpc/http": "workspace:*",
+    "@jsontpc/ws": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.0.0",
     "zod": "^3.0.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "ws": "^8.0.0"
   }
 }

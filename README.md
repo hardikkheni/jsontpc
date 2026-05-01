@@ -34,6 +34,7 @@
 - [🚀 Quick Start](#-quick-start)
   - [HTTP](#http)
   - [TCP](#tcp)
+  - [WebSocket](#websocket)
   - [Custom Adapters](#custom-adapters)
 - [❌ Error Codes](#-error-codes)
 - [🧪 Examples](#-examples)
@@ -49,7 +50,7 @@
 | [`@jsontpc/core`](packages/core/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/core?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/core) | [![npm](https://img.shields.io/npm/dm/@jsontpc/core?label=)](https://www.npmjs.com/package/@jsontpc/core) | ✅ Protocol core — types, router, server, client, adapter primitives |
 | [`@jsontpc/http`](packages/http/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/http?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/http) | [![npm](https://img.shields.io/npm/dm/@jsontpc/http?label=)](https://www.npmjs.com/package/@jsontpc/http) | ✅ HTTP transport (`node:http` + `fetch`) |
 | [`@jsontpc/tcp`](packages/tcp/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/tcp?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/tcp) | [![npm](https://img.shields.io/npm/dm/@jsontpc/tcp?label=)](https://www.npmjs.com/package/@jsontpc/tcp) | ✅ TCP transport (NDJSON framing, custom framer support) |
-| [`@jsontpc/ws`](packages/ws/README.md) | — | — | 🚧 WebSocket transport (`ws`) |
+| [`@jsontpc/ws`](packages/ws/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/ws?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/ws) | [![npm](https://img.shields.io/npm/dm/@jsontpc/ws?label=)](https://www.npmjs.com/package/@jsontpc/ws) | ✅ WebSocket transport (persistent bidirectional, `ws` library) |
 | [`@jsontpc/express`](packages/express/README.md) | — | — | 🚧 Express middleware adapter |
 | [`@jsontpc/fastify`](packages/fastify/README.md) | — | — | 🚧 Fastify plugin adapter |
 | [`@jsontpc/nestjs`](packages/nestjs/README.md) | — | — | 🚧 NestJS dynamic module + decorator adapter |
@@ -63,6 +64,7 @@
 pnpm add @jsontpc/core        # always required
 pnpm add @jsontpc/http        # HTTP transport
 pnpm add @jsontpc/tcp         # TCP transport
+pnpm add @jsontpc/ws ws       # WebSocket transport
 pnpm add zod                  # optional — schema validation
 ```
 
@@ -145,6 +147,47 @@ const client = createClient<typeof router>(transport);
 const result = await client.add({ a: 10, b: 5 }); // → 15
 await transport.close();
 ```
+
+---
+
+### WebSocket
+
+**Server**
+
+```ts
+import { createRouter, procedure, JsonRpcServer } from '@jsontpc/core';
+import { WsServerTransport } from '@jsontpc/ws';
+import { z } from 'zod';
+
+const router = createRouter({
+  add: procedure
+    .input(z.object({ a: z.number(), b: z.number() }))
+    .output(z.number())
+    .handler(({ input }) => input.a + input.b),
+});
+
+const server = new JsonRpcServer(router);
+const transport = new WsServerTransport({ port: 3400 });
+transport.attach(server);
+await transport.listen();
+```
+
+**Client**
+
+```ts
+import { createClient } from '@jsontpc/core';
+import { WsClientTransport } from '@jsontpc/ws';
+import type { router } from './server';
+
+const transport = new WsClientTransport({ url: 'ws://localhost:3400' });
+await transport.connect();
+
+const client = createClient<typeof router>(transport);
+const result = await client.add({ a: 10, b: 5 }); // → 15
+await transport.close();
+```
+
+WebSocket is persistent — `connect()` before first `send()`, then reuse for all calls. Supports concurrent in-flight requests like TCP.
 
 ---
 
@@ -250,6 +293,10 @@ pnpm --filter jsontpc-examples http:client         # Run typed proxy demo agains
 pnpm --filter jsontpc-examples tcp:server          # Start TCP server on port 3300
 pnpm --filter jsontpc-examples tcp:client          # Run typed proxy demo against port 3300
 pnpm --filter jsontpc-examples tcp:custom-framing  # Length-prefix framer demo
+
+# WebSocket examples (run server in one terminal, client in another)
+pnpm --filter jsontpc-examples ws:server           # Start WebSocket server on ws://localhost:3400
+pnpm --filter jsontpc-examples ws:client           # Run typed proxy demo against ws://localhost:3400
 ```
 
 See [`examples/`](examples/) for the full list.
