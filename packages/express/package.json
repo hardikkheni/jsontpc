@@ -1,6 +1,6 @@
 {
   "name": "@jsontpc/express",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "Express middleware adapter for @jsontpc/core",
   "type": "module",
   "engines": {
