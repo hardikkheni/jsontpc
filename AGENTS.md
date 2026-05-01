@@ -187,14 +187,14 @@ Work through phases **in order**. Do not start a later phase until the current o
 
 ### Phase 4 — Framework Adapters (implement in any order)
 
-#### Express — pending
-- [ ] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory
-- [ ] `packages/express/tests/integration/express.test.ts`
-- [ ] `examples/express/server.ts`, `examples/express/client.ts`
-- [ ] `packages/express/README.md` updated with real API docs
-- [ ] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
-- [ ] `examples/package.json` — dep + scripts added
-- [ ] `docs/TODO.md` section marked `COMPLETE ✅`
+#### Express — COMPLETE ✅
+- [x] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory
+- [x] `packages/express/tests/integration/express.test.ts`
+- [x] `examples/express/server.ts`, `examples/express/client.ts`
+- [x] `packages/express/README.md` updated with real API docs
+- [x] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [x] `examples/package.json` — dep + scripts added
+- [x] `docs/TODO.md` section marked `COMPLETE ✅`
 
 #### Fastify — pending
 - [ ] `packages/fastify/src/index.ts` — `jsonRpcFastify()` plugin factory

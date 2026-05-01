@@ -15,18 +15,23 @@
     "http:server": "tsx http/server.ts",
     "http:client": "tsx http/client.ts",
     "ws:server": "tsx ws/server.ts",
-    "ws:client": "tsx ws/client.ts"
+    "ws:client": "tsx ws/client.ts",
+    "express:server": "tsx express/server.ts",
+    "express:client": "tsx express/client.ts"
   },
   "dependencies": {
     "@jsontpc/core": "workspace:*",
     "@jsontpc/tcp": "workspace:*",
     "@jsontpc/http": "workspace:*",
-    "@jsontpc/ws": "workspace:*"
+    "@jsontpc/ws": "workspace:*",
+    "@jsontpc/express": "workspace:*"
   },
   "devDependencies": {
     "tsx": "^4.0.0",
     "zod": "^3.0.0",
     "@types/node": "^22.0.0",
-    "ws": "^8.0.0"
+    "ws": "^8.0.0",
+    "express": "^5.0.0",
+    "@types/express": "^5.0.0"
   }
 }

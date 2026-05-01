@@ -3,7 +3,7 @@ import { HttpClientTransport } from '@jsontpc/http';
 import { z } from 'zod';
 import type { router } from './server';
 
-const transport = new HttpClientTransport('http://localhost:3100/rpc');
+const transport = new HttpClientTransport('http://localhost:3300/rpc');
 const client = createClient<typeof router>(transport);
 
 const sum = await client.add({ a: 20, b: 22 });
@@ -12,8 +12,8 @@ console.log('add(20, 22) →', sum); // 42
 const greeting = await client.greet({ name: 'jsontpc' });
 console.log("greet('jsontpc') →", greeting);
 
-// Send a notification (no id — fire-and-forget, server responds 204)
-const notifResponse = await fetch('http://localhost:3100/rpc', {
+// Send a notification (fire-and-forget, server responds 204)
+const notifResponse = await fetch('http://localhost:3300/rpc', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({

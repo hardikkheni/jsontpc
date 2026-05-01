@@ -87,10 +87,14 @@
 
 ### Phase 4 — Framework Adapters (implement in any order)
 
-#### Express (`packages/express`)
-- [ ] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory (uses `bindAdapter` internally)
-- [ ] `packages/express/tests/integration/express.test.ts`
-- [ ] `examples/express/app.ts`
+#### Express (`packages/express`) — COMPLETE ✅
+- [x] `packages/express/src/index.ts` — `jsonRpcExpress()` middleware factory (uses `bindAdapter` internally)
+- [x] `packages/express/tests/integration/express.test.ts`
+- [x] `examples/express/server.ts`, `examples/express/client.ts`
+- [x] `packages/express/README.md` updated with real API docs
+- [x] Root `README.md` updated (✅ Stable, install block, Quick Start, examples)
+- [x] `examples/package.json` — dep + scripts added
+- [x] `docs/TODO.md` section marked `COMPLETE ✅`
 
 #### Fastify (`packages/fastify`)
 - [ ] `packages/fastify/src/index.ts` — `jsonRpcFastify()` plugin factory (uses `bindAdapter` internally)

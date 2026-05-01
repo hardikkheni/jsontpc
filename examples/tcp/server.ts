@@ -7,11 +7,11 @@
  * Run: pnpm --filter jsontpc-examples tcp:server
  */
 
-import { createRouter, JsonRpcServer, procedure } from "@jsontpc/core";
-import { TcpServerTransport } from "@jsontpc/tcp";
-import { z } from "zod";
+import { createRouter, JsonRpcServer, procedure } from '@jsontpc/core';
+import { TcpServerTransport } from '@jsontpc/tcp';
+import { z } from 'zod';
 
-const router = createRouter({
+export const router = createRouter({
   add: procedure
     .input(z.object({ a: z.number(), b: z.number() }))
     .output(z.number())
@@ -32,5 +32,5 @@ const transport = new TcpServerTransport();
 transport.attach(server);
 
 await transport.listen(3300);
-console.log("TCP JSON-RPC server listening on port 3300");
-console.log("Press Ctrl+C to stop.");
+console.log('TCP JSON-RPC server listening on port 3300');
+console.log('Press Ctrl+C to stop.');

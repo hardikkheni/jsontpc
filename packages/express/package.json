@@ -31,6 +31,12 @@
   "dependencies": {
     "@jsontpc/core": "workspace:*"
   },
+  "devDependencies": {
+    "@jsontpc/http": "workspace:*",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "express": "^5.0.0"
+  },
   "peerDependencies": {
     "express": ">=4"
   },

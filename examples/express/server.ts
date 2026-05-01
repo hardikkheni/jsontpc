@@ -1,5 +1,6 @@
 import { JsonRpcServer, createRouter, procedure } from '@jsontpc/core';
-import { HttpServerTransport } from '@jsontpc/http';
+import { jsonRpcExpress } from '@jsontpc/express';
+import express from 'express';
 import { z } from 'zod';
 
 export const router = createRouter({
@@ -19,9 +20,11 @@ export const router = createRouter({
 });
 
 const server = new JsonRpcServer(router);
-const transport = new HttpServerTransport({ path: '/rpc' });
-transport.attach(server);
+const app = express();
 
-await transport.listen(3100);
-console.log('HTTP JSON-RPC server listening on http://localhost:3100/rpc');
-console.log('Press Ctrl+C to stop.');
+app.post('/rpc', jsonRpcExpress(server));
+
+app.listen(3300, () => {
+  console.log('Express JSON-RPC server listening on http://localhost:3300/rpc');
+  console.log('Press Ctrl+C to stop.');
+});

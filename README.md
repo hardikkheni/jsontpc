@@ -35,6 +35,7 @@
   - [HTTP](#http)
   - [TCP](#tcp)
   - [WebSocket](#websocket)
+  - [Express](#express)
   - [Custom Adapters](#custom-adapters)
 - [❌ Error Codes](#-error-codes)
 - [🧪 Examples](#-examples)
@@ -51,7 +52,7 @@
 | [`@jsontpc/http`](packages/http/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/http?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/http) | [![npm](https://img.shields.io/npm/dm/@jsontpc/http?label=)](https://www.npmjs.com/package/@jsontpc/http) | ✅ HTTP transport (`node:http` + `fetch`) |
 | [`@jsontpc/tcp`](packages/tcp/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/tcp?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/tcp) | [![npm](https://img.shields.io/npm/dm/@jsontpc/tcp?label=)](https://www.npmjs.com/package/@jsontpc/tcp) | ✅ TCP transport (NDJSON framing, custom framer support) |
 | [`@jsontpc/ws`](packages/ws/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/ws?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/ws) | [![npm](https://img.shields.io/npm/dm/@jsontpc/ws?label=)](https://www.npmjs.com/package/@jsontpc/ws) | ✅ WebSocket transport (persistent bidirectional, `ws` library) |
-| [`@jsontpc/express`](packages/express/README.md) | — | — | 🚧 Express middleware adapter |
+| [`@jsontpc/express`](packages/express/README.md) | [![npm](https://img.shields.io/npm/v/@jsontpc/express?label=&color=cb3837)](https://www.npmjs.com/package/@jsontpc/express) | [![npm](https://img.shields.io/npm/dm/@jsontpc/express?label=)](https://www.npmjs.com/package/@jsontpc/express) | ✅ Express middleware adapter |
 | [`@jsontpc/fastify`](packages/fastify/README.md) | — | — | 🚧 Fastify plugin adapter |
 | [`@jsontpc/nestjs`](packages/nestjs/README.md) | — | — | 🚧 NestJS dynamic module + decorator adapter |
 | [`@jsontpc/pubsub`](packages/pubsub/README.md) | — | — | 🗓 v0.2 — Pub/sub push, typed topics, polling fallback, EventBus |
@@ -65,6 +66,7 @@ pnpm add @jsontpc/core        # always required
 pnpm add @jsontpc/http        # HTTP transport
 pnpm add @jsontpc/tcp         # TCP transport
 pnpm add @jsontpc/ws ws       # WebSocket transport
+pnpm add @jsontpc/express     # Express middleware adapter
 pnpm add zod                  # optional — schema validation
 ```
 
@@ -191,6 +193,46 @@ WebSocket is persistent — `connect()` before first `send()`, then reuse for al
 
 ---
 
+### Express
+
+Mount `jsonRpcExpress` on a POST route. Works with or without `express.json()` upstream.
+
+**Server**
+
+```ts
+import express from 'express';
+import { JsonRpcServer, createRouter, procedure } from '@jsontpc/core';
+import { jsonRpcExpress } from '@jsontpc/express';
+import { z } from 'zod';
+
+const router = createRouter({
+  add: procedure
+    .input(z.object({ a: z.number(), b: z.number() }))
+    .output(z.number())
+    .handler(({ input }) => input.a + input.b),
+});
+
+const server = new JsonRpcServer(router);
+const app = express();
+
+app.post('/rpc', jsonRpcExpress(server));
+app.listen(3000);
+```
+
+**Client** — use `HttpClientTransport` from `@jsontpc/http`
+
+```ts
+import { createClient } from '@jsontpc/core';
+import { HttpClientTransport } from '@jsontpc/http';
+
+const client = createClient<typeof router>(
+  new HttpClientTransport('http://localhost:3000/rpc')
+);
+const result = await client.add({ a: 10, b: 5 }); // → 15
+```
+
+---
+
 ### Custom Adapters
 
 `@jsontpc/core` exports two integration paths for building adapters for **any** HTTP framework:
@@ -297,6 +339,10 @@ pnpm --filter jsontpc-examples tcp:custom-framing  # Length-prefix framer demo
 # WebSocket examples (run server in one terminal, client in another)
 pnpm --filter jsontpc-examples ws:server           # Start WebSocket server on ws://localhost:3400
 pnpm --filter jsontpc-examples ws:client           # Run typed proxy demo against ws://localhost:3400
+
+# Express examples (run server in one terminal, client in another)
+pnpm --filter jsontpc-examples express:server      # Start Express JSON-RPC server on port 3300
+pnpm --filter jsontpc-examples express:client      # Run typed proxy demo against port 3300
 ```
 
 See [`examples/`](examples/) for the full list.
