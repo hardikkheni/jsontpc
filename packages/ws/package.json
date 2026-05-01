@@ -1,6 +1,6 @@
 {
   "name": "@jsontpc/ws",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "WebSocket transport for @jsontpc/core",
   "type": "module",
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "@jsontpc/nestjs",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "NestJS module/decorator adapter for @jsontpc/core",
   "type": "module",
   "engines": {
